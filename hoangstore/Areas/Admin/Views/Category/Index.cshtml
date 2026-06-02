@@ -1,0 +1,92 @@
+﻿@model IEnumerable<hoangstore.Models.Category>
+
+<div class="contain p-3">
+    <div class="row pt-3">
+        <div class="col-6">
+            <h2 style="color:purple">
+                Danh sách Danh mục
+            </h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-area="Admin" asp-controller="Category" asp-action="Create" class="btn btn-primary" style="background-color: purple;border:none">
+                <i class="bi bi-plus-circle"></i>Thêm mới danh mục
+            </a>
+        </div>
+    </div>
+    <table class="table table-bordered mt-3 text-center">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th>Vị trí</th>
+                <th>Hoạt động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var i = 1;
+            }
+            @foreach(var item in Model)
+            {
+                <tr>
+                    <td>@i</td>
+                    <td>
+                        @item.Category_Name
+                    </td>
+                    <td>@item.Description</td>
+                    <td>@item.DisplayOrder</td>
+                    <td>
+                        @if(@item.IsActive){
+                            <i class="bi bi-check-lg text-success" title="Đang hoạt động"></i>
+                        }
+                        else{
+                            <i class="bi bi-x-lg text-danger fs-5" title="Ngưng hoạt động"></i>
+                        }
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a asp-area="Admin" asp-controller="Category" asp-action="Edit" asp-route-id="@item.Category_Id" class=" btn btn-sm btn-outline-primary" ">Sửa</a>
+                            <button onclick="DeleteCategory('/Admin/Category/Delete/@item.Category_Id', this)" class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </div>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts{
+    <script>
+        function DeleteCategory(url, button){
+            Swal.fire({
+                title: 'Bạn có chắc muốn xóa không ?',
+                icon: 'warning',
+                showCancelButton: true,
+                cancelButtonColor:'purple',
+                confirmButtonColor:'#d33',
+                confirmButtonText:'Xác nhận',
+                cancelButtonText:'Quay lại'
+            }).then((result) =>{
+                if(result.isConfirmed){
+                    $.ajax({
+                        url: url,
+                        type: 'DELETE',
+                        success: function (data) {
+                            if(data.success){
+                                $(button).closest('tr').remove();
+                            }
+                            else{
+                                Swal.fire('Lỗi!','Không thể xóa danh mục này','error');
+                            }
+                        },
+                        error: function(){
+                            Swal.fire('Lỗi','Lỗi hệ thống','error');
+                        }
+                    });
+                }
+            })}
+    </script>
+}
