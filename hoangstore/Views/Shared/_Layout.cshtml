@@ -16,45 +16,226 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     <style>
-       
+       body{
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+       }
+
+        .container-wide {
+            width: 100%;
+            max-width: 1440px; 
+            margin-right: auto;
+            margin-left: auto;
+            padding-right: 20px;
+            padding-left: 20px;
+        }
+        
+        .top-utility-bar{
+            background-color:#000;
+            color:#fff;
+            font-size:13px;
+            padding:8px 0;
+            letter-spacing:0.5px;
+        }
+        .main-header{
+                background-color: #fff;
+                padding: 12px 0;
+                border-bottom: 1px solid #eee;
+        }
+
+        .header-menu .nav-link {
+            color: #000;
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 1px;
+            padding: 10px 20px !important;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+
+        .header-menu .nav-link.text-danger {
+            color: #dc3545 !important;
+        }
+
+        .header-menu .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 2px;
+            left: 20px;
+            background-color: #000;
+            transition: width 0.3s ease;
+        }
+        .header-menu .nav-link:hover::after {
+            width: calc(100% - 40px);
+        }
+
+        /* Dropdown của danh mục Nam / Nữ */
+        .dropdown-menu-nam, .dropdown-menu-nu {
+            border-radius: 0;
+            border: 1px solid #eee;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .dropdown-item-nam, .dropdown-item-nu {
+            font-size: 13px;
+            padding: 8px 25px;
+        }
+
+        .dropdown-item-nam:hover, .dropdown-item-nu:hover {
+            background-color: #f8f9fa;
+            color: #000;
+        }
+
+        /* Cụm tiện ích phải */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .header-right a {
+            color: #000;
+            font-size: 22px;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .header-right a:hover {
+            color: #555;
+        }
+
+        /* Ô tìm kiếm co giãn nhẹ khi click */
+        .search-box input {
+            font-size: 13px;
+            border-radius: 20px;
+            padding-right: 35px;
+            width: 170px;
+            transition: width 0.3s ease;
+        }
+
+        .search-box input:focus {
+            width: 210px;
+            box-shadow: none;
+            border-color: #000;
+        }
+
+        /* Số hiển thị trên giỏ hàng */
+        .badge-count {
+        position: absolute;
+        top: -5px;
+        right: -10px;
+        background-color: #dc3545; /* Đổi sang màu đỏ cho nổi bật, kích thích mua hàng */
+        color: #fff;
+        font-size: 9px;
+        font-weight: bold;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
     </style>
 </head>
 <body>
 
     <header>
-        <div class="top-utility-bar">
-            <div class="container d-flex justify-content-between align-items-center">
-                <div class="top-bar-left">
-                    <span>Hotline: 1900 xxxx (8:00-22:00)</span>
-                </div>
-                <div class="top-bar-right d-flex gap-4">
-                    <a href="/Admin" class="text-white text-decoration-none">Quản trị</a>
-                    <a href="#" class="text-white text-decoration-none">Đăng nhập / Đăng ký</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-header">
-            <div class="container d-flex align-items-center justify-content-between">
-
-                <div class="header-logo-container">
-                    <a href="/" class="text-decoration-none">
-                        <h2 class="serif-font m-0 fw-bold text-dark text-uppercase" style="letter-spacing: 2px;">
-                            <i class="bi bi-code-slash text-danger"></i> HoangStore
-                        </h2>
-                    </a>
-                </div>
-
-                <div class="header-utility-icons">
-                    <a href="#"><i class="bi bi-search"></i></a>
-                    <a href="#" class="position-relative">
-                        <i class="bi bi-bag"></i>
-                        <span class="cart-count">3</span>
-                    </a>
-                    <a href="#"><i class="bi bi-person"></i></a>
-                </div>
-            </div>
-        </div>
+       <div class="top-utility-bar">
+           <div class="container-wide d-flex justify-content-between align-items-center">
+               <div class="top-bar-left">
+                    Hotline: 1900 2005 (8:00-22:00)
+               </div>
+               <div class="top-bar-right d-flex gap-3">
+                   <div class="auth-features">
+                        <a asp-area="Identity" asp-page="/Account/Login" class="text-white text-decoration-none">Đăng nhập</a>
+                        <span class="text-white mx-1">|</span>
+                        <a asp-area="Identity" asp-page="/Account/Register" class="text-white text-decoration-none">Đăng ký</a>
+                   </div>
+               </div>
+           </div>
+       </div>
+       <div class="main-header bg-white sticky-top shadow-sm ">
+            <div class="container-wide d-flex justify-content-between align-items-center">
+                <!--Logo-->
+              <div class="header-logo" >
+                  <a asp-controller="Home" asp-action="Index">
+                        <img src="~/images/Logo_HoangStore.png" style="max-height:100px; width: auto; object-fit: contain" />
+                  </a>
+              </div>
+              <!--Menu-->
+              <div class="header-menu d-none d-lg-block">
+                  <ul class="nav justify-content-center">
+                      <li class="nav-item">
+                          <a class="nav-link active" href="/">Trang chủ</a>
+                      </li>
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-toggle" href="#" id="navDropdownNam"  data-bs-toggle="dropdown" aria-expanded="false">Nam</a>
+                            <ul class="dropdown-menu dropdown-menu-nam rounded-0 m-0 shadow-lg" aria-labelledby="navDropdownNam">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-nam" href="#">Áo nam</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-nam" href="#">Quần nam</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-nam" href="#">Phụ kiện</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-toggle" href="#" id="navDropdownNu" data-bs-toggle="dropdown" role="button" aria-expanded="false">Nữ</a>
+                            <ul class="dropdown-menu dropdown-menu-nu rounded-0 m-0" aria-labelledby="navDropdownNu">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-nu" href="#">Áo nữ</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-nu" href="#">Quần nữ</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-nu" href="#">Váy</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-nu" href="#">Phụ kiện</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Mới</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Nổi bật</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="#">Sale</a>
+                        </li>
+                  </ul>
+              </div>
+              <!--Goc phai-->
+              <div class="header-right d-flex align-items-center gap-3">
+                  <!--Thanh tim kiem-->
+                  <form class="d-flex position-relative search-box m-0">
+                      <input class="form-control form-control-sm border-secondary-subtle bg-light" type="search" placeholder="Tìm sản phẩm ..." aria-label="Search" />
+                      <button class="btn btn-sm position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent pe-3" type="submit">
+                          <i class="bi bi-search text-muted"></i>
+                      </button>
+                  </form>
+                  <!--Yeu thich-->
+                  <a href="#" title="Yêu thích">
+                      <i class="bi bi-heart"></i>
+                      <span class="badge-count">@ViewBag.ProductlistsCount</span>    
+                  </a>
+                  <!--Gio hang-->
+                  <a href="#" title="Giỏ hàng">
+                      <i class="bi bi-bag"></i>
+                        <span class="badge-count">@ViewBag.CartCount</span>
+                  </a>
+              </div>
+           </div>
+       </div>
     </header>
 
     <div class="container-fluid p-0">
@@ -63,44 +244,7 @@
         </main>
     </div>
 
-    <footer class="torano-footer mt-auto">
-        <div class="container">
-            <div class="row row-cols-2 row-cols-md-4 g-5">
-                <div class="col">
-                    <h6 class="serif-font footer-title">Về HoangStore</h6>
-                    <p class="text-muted fs-7">Giới thiệu<br>Hệ thống cửa hàng<br>Tuyển dụng</p>
-                </div>
-                <div class="col">
-                    <h6 class="serif-font footer-title">Hỗ trợ khách hàng</h6>
-                    <ul class="footer-links">
-                        <li><a href="#">Chính sách đổi trả</a></li>
-                        <li><a href="#">Chính sách bảo mật</a></li>
-                        <li><a href="#">Phương thức thanh toán</a></li>
-                    </ul>
-                </div>
-                <div class="col">
-                    <h6 class="serif-font footer-title">Danh mục sản phẩm</h6>
-                    <ul class="footer-links">
-                        <li><a href="#">Áo nam</a></li>
-                        <li><a href="#">Quần nam</a></li>
-                        <li><a href="#">Phụ kiện</a></li>
-                    </ul>
-                </div>
-                <div class="col">
-                    <h6 class="serif-font footer-title">Liên hệ</h6>
-                    <p class="text-muted fs-7">
-                        Email: support@hoangstore.com<br>
-                        Address: Hanoi, Vietnam
-                    </p>
-                </div>
-            </div>
-
-            <div class="border-top mt-5 pt-4 text-center">
-                <p class="text-muted fs-8">&copy; 2026 - HoangStore. Thiết kế lấy cảm hứng từ Torano. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
+    
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
