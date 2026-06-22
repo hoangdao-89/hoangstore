@@ -1,0 +1,81 @@
+﻿@model IEnumerable<hoangstore.Models.Product>
+<div class="container  p-3">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 style="color: purple">Danh sách sản phẩm</h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-area="Admin" asp-controller="Product" asp-action="Create" class="btn btn-primary" style="background-color: purple; border:none">
+                <i class="bi bi-plus-circle"></i>Thêm mới sản phẩm
+            </a>
+        </div>
+    </div>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <th>Tên sản phẩm</th>
+            <th>Hình ảnh</th>
+            <th>Mô tả</th>
+            <th>Giá tiền</th>
+            <th>Số lượng còn</th>
+            <th>Danh mục</th>
+        </thead>
+        <tbody>
+            @foreach(var item in Model)
+            {
+                <tr>
+                    <td>@item.Product_Name</td>
+                    <td><img src="@item.Image_Url" alt="Loading" /></td>
+                    <td>@item.Product_Description</td>
+                    <td>@item.Price.ToString("N0") VNĐ</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Category?.Category_Name</td>
+                    <td >
+                        <div class="d-flex gap-2">
+                            <a asp-area="Admin" asp-controller="Product" asp-action="Edit" asp-route-id="@item.Product_Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            <button onclick="DeleteProduct('/Admin/Product/Delete/@item.Product_Id', this)" class="btn btn-sm btn-outline-danger">
+                                Xóa
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+   
+@section Scripts{
+    <script>
+        function DeleteProduct(url, button) {
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xóa?',
+               
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'purple', 
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Gửi yêu cầu xóa đến Controller bằng Ajax
+                    $.ajax({
+                        url: url,
+                        type: 'DELETE',
+                        success: function (data) {
+                           if(data.success){
+                               $(button).closest('tr').remove();
+                           }
+                           else{
+                               Swal.fire('Lỗi!','Không thể xóa sản phẩm này', 'error');
+                           }
+                        },
+                        error: function(){
+                            Swal.fire('Lỗi', 'Lỗi hệ thống','error');
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+}
