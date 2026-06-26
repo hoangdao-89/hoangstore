@@ -16,7 +16,7 @@ namespace hoangstore.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var product = await _db.Products.Include(p=>p.Category).Where(p => p.IsDelete == false && p.Category!=null&& p.Category.IsDelete==false).ToListAsync();
+            var product = await _db.Products.Include(p=>p.Category).Include(p=>p.ProductVariants).Where(p => p.IsDelete == false && p.Category!=null&& p.Category.IsDelete==false).ToListAsync();
 
             return View(product);
         }

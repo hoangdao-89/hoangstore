@@ -66,7 +66,7 @@ namespace hoangstore.Areas.Admin.Controllers
                 await GetCategoryName();
                 return View(product);
             }
-            var ProductInDB = await _db.Products.FindAsync(product.Product_Id);
+            var ProductInDB = await _db.Products.FindAsync(product.ProductId);
             if(ProductInDB == null) return NotFound();
             ProductInDB.Product_Name = product.Product_Name;
             ProductInDB.Price = product.Price;
@@ -121,7 +121,7 @@ namespace hoangstore.Areas.Admin.Controllers
         {
             ViewBag.CategoryList = await _db.Categories.Where(c => c.IsDelete == false).Select(c=> new
             {
-                CatId = c.Category_Id,
+                CatId = c.CategoryId,
                 CatName = c.Category_Name
             }).ToListAsync();
         }

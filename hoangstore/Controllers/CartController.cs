@@ -17,6 +17,7 @@ namespace hoangstore.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(int variantId, int quantity = 1)
         {
+            
             //kiem tra dang nhap
             if (User.Identity == null || !User.Identity.IsAuthenticated)
             {

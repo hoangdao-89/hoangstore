@@ -31,8 +31,8 @@
                     <td>@item.Category?.Category_Name</td>
                     <td >
                         <div class="d-flex gap-2">
-                            <a asp-area="Admin" asp-controller="Product" asp-action="Edit" asp-route-id="@item.Product_Id" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <button onclick="DeleteProduct('/Admin/Product/Delete/@item.Product_Id', this)" class="btn btn-sm btn-outline-danger">
+                            <a asp-area="Admin" asp-controller="Product" asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            <button onclick="DeleteProduct('/Admin/Product/Delete/@item.ProductId', this)" class="btn btn-sm btn-outline-danger">
                                 Xóa
                             </button>
                         </div>

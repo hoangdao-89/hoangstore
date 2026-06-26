@@ -4,15 +4,13 @@
     ViewData["Title"] = "Trang chủ - HoangStore";
 }
 
-<div class="torano-hero-banner position-relative overflow-hidden mb-5">
-    <img src="~/images/hero_banner_large.jpg" class="img-fluid w-100" alt="Back In Form Banner" style="object-fit: cover; height: 650px; filter: brightness(90%);">
-
+<div class="container torano-hero-banner position-relative overflow-hidden mb-5">
+    <img src="~/images/Banner.png" class="img-fluid w-100" alt="Back In Form Banner" style="object-fit: cover; height: 650px; filter: brightness(90%);">
     <div class="banner-text-overlay position-absolute end-0 top-50 translate-middle-y me-5 pe-5 text-end text-white" style="z-index: 10;">
         <h1 class="serif-font text-uppercase fw-bold text-dark m-0" style="font-size: 100px; letter-spacing: -2px; line-height: 0.9;">Back<br>In Form</h1>
         <p class="serif-font fw-light text-dark fs-5 mt-3 text-uppercase" style="letter-spacing: 2px;">Not just back to work - Back with presence</p>
     </div>
 </div>
-
 
 <div class="container pb-5">
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
@@ -22,26 +20,49 @@
         <span class="badge bg-light text-secondary border">Tổng số: @Model.Count() sản phẩm</span>
     </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
         @foreach (var item in Model)
         {
             <div class="col torano-product-card">
                 <div class="card h-100 shadow-sm border-0 position-relative rounded-0 transition-transform">
-                    <img src="https://placehold.co/400x400?text=@item.Product_Name" class="card-img-top p-0 rounded-0" alt="@item.Product_Name" style="object-fit: cover; aspect-ratio: 1/1;">
+                    <img src="@(string.IsNullOrEmpty(item.Image_Url) ? "https://placehold.co/400x400?text=" + item.Product_Name : item.Image_Url)" class="card-img-top p-0 rounded-0" alt="@item.Product_Name" style="object-fit: cover; aspect-ratio: 1/1;">
 
                     <div class="card-body d-flex flex-column pt-3 px-3">
-                        <span class="badge bg-light text-secondary mb-2 align-self-start border fs-9 rounded-0 text-uppercase">@item.Category?.Category_Name</span>
+                        <span class="badge bg-light text-secondary mb-2 align-self-start border fs-9 rounded-0 text-uppercase">
+                            @item.Category?.Category_Name
+                        </span>
 
                         <h6 class="card-title fw-bold text-dark text-truncate mb-2 text-uppercase fs-8" title="@item.Product_Name">
                             @item.Product_Name
                         </h6>
 
-                        <p class="card-text text-danger fw-bold fs-6 mb-3">
+                        <p class="card-text text-danger fw-bold fs-6 mb-2">
                             @string.Format("{0:N0}", item.Price) đ
                         </p>
 
+                        @if (item.ProductVariants != null && item.ProductVariants.Any())
+                        {
+                            <div class="mb-3">
+                                <label class="form-label small text-muted mb-1">Chọn kích cỡ & màu sắc:</label>
+                                <select class="form-select form-select-sm rounded-0 select-variant" style="font-size: 12px;">
+                                    @foreach (var variant in item.ProductVariants)
+                                    {
+                                        <option value="@variant.Id">
+                                            Size: @variant.Size - Màu: @variant.Color (@string.Format("{0:N0}", variant.Price) đ)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <span class="badge bg-warning text-dark rounded-0 w-100 py-2 fs-9">Sản phẩm tạm hết hàng</span>
+                            </div>
+                        }
+
                         <div class="mt-auto d-grid gap-2">
-                            <button class="btn btn-outline-danger btn-sm fw-bold rounded-0 py-2 fs-8">
+                            <button class="btn btn-outline-danger btn-sm fw-bold rounded-0 py-2 fs-8 btn-add-to-cart" data-product-id="@item.ProductId">
                                 <i class="bi bi-cart-plus me-1"></i> Thêm vào giỏ
                             </button>
                             <button class="btn btn-danger btn-sm fw-bold rounded-0 py-2 fs-8 text-uppercase">
@@ -56,9 +77,9 @@
 </div>
 
 <style>
-    /* Một chút CSS tùy chỉnh chỉ cho trang chủ */
-    .torano-product-card Transition-transform {
-        transition: transform 0.2s;
+    /* Hiệu ứng mượt mà khi hover vào thẻ sản phẩm */
+    .torano-product-card .card {
+        transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .torano-product-card:hover .card {
@@ -66,3 +87,57 @@
         box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
     }
 </style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+       $(document).ready(function(){
+           $('.btn-add-to-cart').click(function(e){
+               e.preventDefault();
+               
+               // Tìm thẻ select-variant cùng cấp trong cái card sản phẩm vừa được click
+               var cardBody = $(this).closest('.card-body');
+               var variantSelect = cardBody.find('.select-variant');
+               
+               // Nếu sản phẩm có biến thể thì lấy variantId, không thì lấy trực tiếp productId
+               var variantId = variantSelect.length ? variantSelect.val() : null;
+               var productId = $(this).data('product-id'); 
+               
+               $.ajax({
+                   url: '/Cart/AddToCart', 
+                   type: 'POST',
+                   data: {
+                       productId: productId,
+                       variantId: variantId, // Gửi kèm cả VariantId chuẩn Shopee lên Controller
+                       quantity: 1
+                   },
+                   success: function(res){
+                       if(res.success){
+                           // Cập nhật số lượng giỏ hàng trên Header theo thời gian thực
+                           $('.badge-count').text(res.newCount);
+                           
+                           // Hiện popup thông báo tích xanh biến mất sau 1.5s
+                           Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công',
+                                text: res.message || 'Đã thêm vào giỏ hàng!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                       }
+                       else{
+                           if (res.redirectToLogin) {
+                                window.location.href = '/Identity/Account/Login';
+                           } else {
+                                Swal.fire('Thất bại', res.message || 'Vui lòng thử lại!', 'error');
+                           }
+                       }
+                   },
+                   error: function () {
+                        Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ lúc này!', 'error');
+                    }
+               });
+           });
+       });
+    </script>
+}

@@ -63,7 +63,7 @@ namespace hoangstore.Areas.Admin.Controllers
             {
                 return View(category);
             }
-            var categoryInDb = await _db.Categories.FindAsync(category.Category_Id);
+            var categoryInDb = await _db.Categories.FindAsync(category.CategoryId);
             if (categoryInDb == null) return NotFound();
 
             categoryInDb.Category_Name = category.Category_Name;

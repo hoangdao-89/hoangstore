@@ -39,4 +39,22 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.MapRazorPages();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+     
+        SystemSeeder.SeedSystemData(services).Wait();
+        if (app.Environment.IsDevelopment())
+        {
+            MockSeeder.SeedTestData(services);
+        }
+    }
+    catch(Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Có lỗi xảy ra trong quá trình Seed dữ liệu.");
+    }
+}
 app.Run();
