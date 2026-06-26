@@ -254,3 +254,19 @@ a {
     font-weight: 600;
     letter-spacing: 0.5px;
 }
+
+
+/*================================QUICK_VIEW_PARTIAL================================*/
+/* Trạng thái nút biến thể được chọn */
+.btn-select-size.active-variant,
+.btn-select-color.active-variant {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border-color: #000000 !important;
+}
+
+/* Nút xác nhận khi tăng chiều cao */
+.py-25 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+}

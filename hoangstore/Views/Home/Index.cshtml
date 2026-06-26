@@ -62,10 +62,10 @@
                         }
 
                         <div class="mt-auto d-grid gap-2">
-                            <button class="btn btn-outline-danger btn-sm fw-bold rounded-0 py-2 fs-8 btn-add-to-cart" data-product-id="@item.ProductId">
+                            <button class="btn btn-outline-danger btn-sm fw-bold rounded-0 py-2 fs-8 btn-quick-view" data-id="@item.ProductId" data-action="add-to-cart">
                                 <i class="bi bi-cart-plus me-1"></i> Thêm vào giỏ
                             </button>
-                            <button class="btn btn-danger btn-sm fw-bold rounded-0 py-2 fs-8 text-uppercase">
+                            <button class="btn btn-danger btn-sm fw-bold rounded-0 py-2 fs-8 text-uppercase btn-quick-view" data-id="@item.ProductId" data-action="buy-now">
                                 Mua ngay
                             </button>
                         </div>
@@ -75,6 +75,16 @@
         }
     </div>
 </div>
+
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-0">
+            <div id="quickViewModalBody">
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <style>
     /* Hiệu ứng mượt mà khi hover vào thẻ sản phẩm */
@@ -137,6 +147,29 @@
                         Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ lúc này!', 'error');
                     }
                });
+           });
+       });
+
+       $(document).on('click','.btn-quick-view', function(){
+           var productId = $(this).data('id');
+           //lay ra action
+           var action = $(this).data('action')
+           //day ajax len controller de lay giao dien chi tiet san pham
+           $.ajax({
+               url: '/Home/GetQuickView/' + productId,
+               type:'GET',
+               success: function(res){
+                   //do code html vao modal
+                   $('#quickViewModelBody').html(res);
+                   //hien thi modal len man hinh
+                   $('#quickViewModal').modal('show');
+                   //luu lai hanh dong vao input an trong modal
+                   $('#currentAction').val(action);
+
+               },
+               error: function(){
+                   Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ lúc này!', 'error');
+               }
            });
        });
     </script>

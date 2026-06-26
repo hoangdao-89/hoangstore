@@ -20,6 +20,19 @@ namespace hoangstore.Controllers
 
             return View(product);
         }
+        public async Task<IActionResult> GetQuickView(int? id){
+            if(id == 0||id == null)
+            {
+                return NotFound();
+            }
+            var product = await _db.Products.Include(p => p.ProductVariants).FirstOrDefaultAsync(p => p.ProductId == id);
+            if (product == null) { 
+                return NotFound();
+            }
+            return PartialView("_QuickViewPartial", product);
+        }
+
+
 
         public IActionResult Privacy()
         {
@@ -31,5 +44,6 @@ namespace hoangstore.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
     }
 }
