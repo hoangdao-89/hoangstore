@@ -105,7 +105,7 @@
                       <span class="badge-count">@ViewBag.ProductlistsCount</span>    
                   </a>
                   <!--Gio hang-->
-                  <a href="#" title="Giỏ hàng">
+                  <a asp-action="Index" asp-controller="Cart" title="Giỏ hàng">
                       <i class="bi bi-bag"></i>
                         @await Component.InvokeAsync("CartCount")
                   </a>
