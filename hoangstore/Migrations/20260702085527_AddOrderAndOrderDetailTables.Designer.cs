@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using hoangstore.Data;
 
@@ -11,9 +12,11 @@ using hoangstore.Data;
 namespace hoangstore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260702085527_AddOrderAndOrderDetailTables")]
+    partial class AddOrderAndOrderDetailTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -345,9 +348,6 @@ namespace hoangstore.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -384,7 +384,7 @@ namespace hoangstore.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Order");
                 });
 
             modelBuilder.Entity("hoangstore.Models.OrderDetail", b =>
@@ -413,7 +413,7 @@ namespace hoangstore.Migrations
 
                     b.HasIndex("ProductVariantId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderDetail");
                 });
 
             modelBuilder.Entity("hoangstore.Models.Product", b =>

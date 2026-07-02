@@ -27,9 +27,23 @@
                </div>
                <div class="top-bar-right d-flex gap-3">
                    <div class="auth-features">
-                        <a asp-area="Identity" asp-page="/Account/Login" class="text-white text-decoration-none">Đăng nhập</a>
-                        <span class="text-white mx-1">|</span>
-                        <a asp-area="Identity" asp-page="/Account/Register" class="text-white text-decoration-none">Đăng ký</a>
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Manage/Index" class="text-white text-decoration-none">
+                                Hi, @(User.FindFirst("FirstName")?.Value ?? User.Identity.Name)
+                            </a>
+                            <span class="text-white mx-1">|</span>
+
+                            <form id="logoutForm" class="d-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                                <a href="javascript:void(0)" onclick="document.getElementById('logoutForm').submit()" class="text-white text-decoration-none">Đăng xuất</a>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="text-white text-decoration-none">Đăng nhập</a>
+                            <span class="text-white mx-1">|</span>
+                            <a asp-area="Identity" asp-page="/Account/Register" class="text-white text-decoration-none">Đăng ký</a>
+                        }
                    </div>
                </div>
            </div>

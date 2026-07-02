@@ -84,6 +84,7 @@ namespace hoangstore.Areas.Admin.Controllers
             var category = await _db.Categories.FindAsync(id);
             if(category == null) return Json(new {success=false});
             await Auditing(category, "delete");
+            _db.Categories.Update(category);
             await _db.SaveChangesAsync();
          
             return Json(new {success=true});

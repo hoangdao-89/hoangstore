@@ -9,7 +9,7 @@ namespace hoangstore.Data
         public static async Task SeedSystemData(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            string[] roleNames = { "ADMIN", "KHÁCH HÀNG" };
+            string[] roleNames = { "Admin", "Khách hàng" };
             foreach (var roleName in roleNames)
             {
                 //check asyn xem role da ton tai chua
@@ -41,7 +41,7 @@ namespace hoangstore.Data
                 //tao thanh conmg -> gan quyen admin
                 if (createUserAdmin.Succeeded)
                 {
-                    await admin.AddToRoleAsync(newAdmin, "ADMIN");
+                    await admin.AddToRoleAsync(newAdmin, "Admin");
                 }
 
             }

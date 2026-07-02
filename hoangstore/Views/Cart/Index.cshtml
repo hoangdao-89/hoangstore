@@ -218,23 +218,25 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function(){
-            // 1. Hàm tính tổng tiền
+            // Ham tinh tong tien gio hang 
             function calculateCartTotal(){
                 var total = 0;
                 var count = 0;
-                // Duyệt các ô được tích đang hiển thị thực tế
+                
+                // Duyet cac o checked dang hien thi thuc te
                 $('.check-cart-item:checked:visible').each(function(){
                     var row = $(this).closest('.cart-item-row');
                     var subTotal = parseFloat(row.find('.item-subtotal').data('subtotal')) || 0;
                     total += subTotal;
                     count++;
                 });
-                // Cập nhật giá lên thanh công cụ
+                
+                // Cap nhat gia tri len thanh cong cu thanh sticky bar
                 $('#cart-final-price').text(total.toLocaleString('vi-VN') + ' đ');
                 $('#selected-count').text(count);
                 $('#selected-count-mb').text(count);
                 
-                // Mở/Khóa nút mua hàng
+                // Mo hoac khoa nut mua hang dua vao so luong san pham duoc tich
                 if(count > 0){
                     $('#btn-proceed-checkout').prop('disabled', false);
                 }
@@ -243,7 +245,7 @@
                 }
             }
 
-            // 2. Bấm nút chọn tất cả
+            // Bam nut chon tat ca
             $(document).on('change', '#check-all-cart', function(){
                 var isChecked = $(this).is(':checked');
                 $('.check-cart-item').prop('checked', isChecked);
@@ -255,7 +257,7 @@
                 calculateCartTotal();
             });
 
-            // 3. Chọn từng ô đơn lẻ (Đồng bộ PC & Mobile)
+            // Chon tung o don le
             $(document).on('change', '.check-cart-item', function () {
                 var row = $(this).closest('.cart-item-row');
                 var cartItemId = $(this).val();
@@ -268,14 +270,14 @@
                     $(`.cart-item-row[data-id="${cartItemId}"]`).removeClass('cart-item-row-selected');
                 }
 
-                // Check xem đã chọn tất cả các ô chưa
+                // Check xem da chon tat ca cac o chua de tu dong tich o chon tat ca
                 var allChecked = $('.check-cart-item:checked').length === $('.check-cart-item').length;
                 $('#check-all-cart').prop('checked', allChecked && $('.check-cart-item').length > 0);
 
                 calculateCartTotal();
             });
 
-            // 4. Xử lý số lượng khi bấm nút + - (Đã dọn dẹp lỗi đóng ngoặc thừa)
+            // Xu ly so luong khi bam nut cong + hoac tru -
             $(document).on('click', '.btn-update-qty', function(){
                 var button = $(this);
                 var row = button.closest('.cart-item-row');
@@ -297,7 +299,7 @@
                         else{
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Thất bại',
+                                title: 'That bai',
                                 text: res.message,
                                 timer: 1500,
                                 showConfirmButton: false
@@ -307,19 +309,19 @@
                 });
             });
 
-            // 5. Xử lý Xóa đơn lẻ (Bấm icon thùng rác)
+            // Xu ly xoa don le
             $(document).on('click', '.btn-delete-single', function () {
                 var cartItemId = $(this).data('id');
 
                 Swal.fire({
-                    title: 'Xác nhận xóa?',
-                    text: "Sản phẩm sẽ bị xóa khỏi giỏ hàng của bạn!",
+                    title: 'Xac nhan xoa?',
+                    text: "San pham se bi xoa khoi gio hang cua ban!",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc3545',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Xóa ngay',
-                    cancelButtonText: 'Hủy'
+                    confirmButtonText: 'Xoa ngay',
+                    cancelButtonText: 'Huy'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
@@ -342,7 +344,7 @@
                 });
             });
 
-            // 6. Xử lý Xóa hàng loạt mục đã chọn
+            // Xu ly xoa hang loat muc da chon
             $(document).on('click', '#btn-delete-selected', function () {
                 var selectedIds = [];
                 $('.check-cart-item:checked:visible').each(function () {
@@ -350,19 +352,19 @@
                 });
 
                 if (selectedIds.length === 0) {
-                    Swal.fire({ icon: 'info', title: 'Thông báo', text: 'Vui lòng chọn ít nhất một sản phẩm để xóa!' });
+                    Swal.fire({ icon: 'info', title: 'Thong bao', text: 'Vui long chon it nhat mot san pham de xoa!' });
                     return;
                 }
 
                 Swal.fire({
-                    title: 'Xóa các mục đã chọn?',
-                    text: `Bạn có chắc muốn xóa ${selectedIds.length} sản phẩm khỏi giỏ hàng?`,
+                    title: 'Xoa cac muc da chon?',
+                    text: `Ban co chac muon xoa ${selectedIds.length} san pham khoi gio hang?`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc3545',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Xóa hết',
-                    cancelButtonText: 'Hủy'
+                    confirmButtonText: 'Xoa het',
+                    cancelButtonText: 'Huy'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
@@ -385,6 +387,41 @@
                         });
                     }
                 });
+            });
+
+            // TU DONG TICH CHON SAN PHAM KHI BAM MUA NGAY TU TRANG CHU 
+            var urlParams = new URLSearchParams(window.location.search);
+            var buyNowId = urlParams.get('buyNowId');
+
+            if (buyNowId) {
+                // Tu dong tich checkbox phien ban PC va Mobile co ID trung khop
+                $(`.check-cart-item[value="${buyNowId}"]`).prop('checked', true);
+                $(`.cart-item-row[data-id="${buyNowId}"]`).addClass('cart-item-row-selected');
+                
+                // Cap nhat lai trang thai o check-all
+                var allChecked = $('.check-cart-item:checked').length === $('.check-cart-item').length;
+                $('#check-all-cart').prop('checked', allChecked && $('.check-cart-item').length > 0);
+
+                // Tinh lai tong tien de mo khoa nut mua hang
+                calculateCartTotal();
+            }
+
+            //  XU LY CHUYEN HUONG SANG TRANG CHECKOUT KHI BAM NUT MUA HANG ---
+            $(document).on('click', '#btn-proceed-checkout', function() {
+                var selectedIds = [];
+                // Gom toan bo ID dang duoc checked thuc te tren man hinh
+                $('.check-cart-item:checked:visible').each(function() {
+                    selectedIds.push($(this).val());
+                });
+
+                if (selectedIds.length === 0) {
+                    Swal.fire({ icon: 'warning', title: 'Thong bao', text: 'Vui long chon it nhat mot san pham de tien hanh dat hang!' });
+                    return;
+                }
+
+                // Chuyen mang ID thanh chuoi cach nhau bang dau phay gui sang trang Checkout
+                var itemIdsString = selectedIds.join(',');
+                window.location.href = '/Order/Checkout?itemIds=' + itemIdsString;
             });
         });
     </script>

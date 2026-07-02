@@ -31,5 +31,6 @@ namespace hoangstore.Models
         public string? Variant_Image_Url { get; set; }
 
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+        public ICollection<OrderDetail> OrderDetails {  get; set; } = new List<OrderDetail>();
     }
 }

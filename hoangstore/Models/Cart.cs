@@ -10,9 +10,10 @@ namespace hoangstore.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Mã người dùng không được bỏ trống")]
-        [Display(Name = "Mã người dùng")]
+        [Required]
         public string UserId { get; set; } = null!;
+        [ForeignKey("UserId")]
+        public ApplicationUser? User { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;

@@ -87,6 +87,7 @@ namespace hoangstore.Areas.Admin.Controllers
             var product = await _db.Products.FindAsync(id);
             if (product == null) return Json(new {success=false});
             await Auditing(product, "delete");
+            _db.Products.Update(product);
             await _db.SaveChangesAsync();
             return Json(new { success = true});
         }

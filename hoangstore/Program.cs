@@ -7,7 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 //dang ky chuoi ket noi vao he thong
 builder.Services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultUI(); ;
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultUI()
+    .AddDefaultTokenProviders()
+    .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

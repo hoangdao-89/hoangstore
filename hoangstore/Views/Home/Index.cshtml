@@ -194,7 +194,7 @@
                         $('#quickViewModal').modal('hide');
                         //dieu huong theo action
                         if(actionType == 'buy-now'){
-                            window.location.href = '/Cart/Index';
+                           window.location.href = '/Cart/Index?buyNowId=' + res.cartItemId;
                         }
                         else{
                            Swal.fire({
@@ -207,7 +207,11 @@
                         }
                     }
                     else{
-                       window.location.href = '/Identity/Account/Login?ReturnUrl=' + encodeURIComponent(window.location.pathname);
+                       if(res.redirectToLogin) {
+                            window.location.href = '/Identity/Account/Login?ReturnUrl=' + encodeURIComponent(window.location.pathname);
+                       } else {
+                            Swal.fire('Thông báo', res.message || 'Có lỗi xảy ra!', 'warning');
+                       }
                     }
                 }
             });

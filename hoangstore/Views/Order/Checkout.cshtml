@@ -1,0 +1,145 @@
+﻿@model hoangstore.Models.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Thanh toán đơn hàng - HoangStore";
+}
+
+<div class="container py-5">
+    <div class="mb-4 pb-2 border-bottom">
+        <h3 class="serif-font text-uppercase fw-bold text-dark m-0">
+            <i class="bi bi-credit-card-2-front-fill text-danger me-2"></i>Thanh toán đơn hàng
+        </h3>
+    </div>
+
+    <form asp-action="ProcessCheckout" asp-controller="Order" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="cartItemIdsString" value="@Model.SelectedCartItemIds" />
+
+        <div class="row g-5">
+            <div class="col-lg-7">
+                <h5 class="fw-bold text-uppercase mb-4 text-secondary" style="font-size: 14px; letter-spacing: 1px;">
+                    Thông tin giao hàng
+                </h5>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger rounded-0 fs-8">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-dark">Họ và tên người nhận</label>
+                    <input type="text" name="ReceiverName" class="form-control rounded-0" value="@ViewBag.ReceiverName" required placeholder="Nhập tên người nhận hàng" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-dark">Số điện thoại nhận hàng</label>
+                    <input type="tel" name="ReceiverPhone" class="form-control rounded-0" value="@ViewBag.ReceiverPhone" required placeholder="Nhập số điện thoại" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-dark">Địa chỉ nhận hàng thực tế</label>
+                    <textarea name="ShippingAddress" class="form-control rounded-0" rows="3" required placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
+                </div>
+
+                <h5 class="fw-bold text-uppercase mt-5 mb-4 text-secondary" style="font-size: 14px; letter-spacing: 1px;">
+                    Phương thức thanh toán
+                </h5>
+
+                <div class="card rounded-0 border mb-3">
+                    <div class="card-body p-3">
+                        <div class="form-check m-0 cursor-pointer">
+                            <input class="form-check-input" type="radio" name="PaymentMethod" id="pay-cod" value="COD" checked>
+                            <label class="form-check-label fw-medium text-dark ms-2 cursor-pointer" for="pay-cod">
+                                <i class="bi bi-truck me-2 text-secondary"></i> Thanh toán khi nhận hàng (COD)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card rounded-0 border">
+                    <div class="card-body p-3">
+                        <div class="form-check m-0 cursor-pointer">
+                            <input class="form-check-input" type="radio" name="PaymentMethod" id="pay-vnpay" value="VNPAY">
+                            <label class="form-check-label fw-medium text-dark ms-2 cursor-pointer" for="pay-vnpay">
+                                <i class="bi bi-wallet2 me-2 text-danger"></i> Cổng thanh toán điện tử VNPAY QR
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card rounded-0 border-0 bg-light p-4 shadow-sm">
+                    <h5 class="fw-bold text-uppercase mb-4 border-bottom pb-2 text-dark" style="font-size: 14px; letter-spacing: 1px;">
+                        Tóm tắt đơn hàng (@Model.SelectedItems.Count)
+                    </h5>
+
+                    <div class="checkout-items-list mb-4" style="max-height: 320px; overflow-y: auto;">
+                        @foreach (var item in Model.SelectedItems)
+                        {
+                            var subTotal = (item.ProductVariant?.Price ?? 0) * item.Quantity;
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-white">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="@(string.IsNullOrEmpty(item.ProductVariant?.Variant_Image_Url) ? (string.IsNullOrEmpty(item.ProductVariant?.Product?.Image_Url) ? "https://placehold.co/60x60" : item.ProductVariant.Product.Image_Url) : item.ProductVariant.Variant_Image_Url)"
+                                         class="border bg-white" style="width: 55px; height: 55px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-1 text-dark fw-bold text-uppercase fs-8 text-truncate" style="max-width: 200px;">
+                                            @item.ProductVariant?.Product?.Product_Name
+                                        </h6>
+                                        <span class="text-muted d-block" style="font-size: 11px;">
+                                            Phân loại: @item.ProductVariant?.Size / @item.ProductVariant?.Color
+                                        </span>
+                                        <span class="text-secondary" style="font-size: 12px;">
+                                            SL: @item.Quantity x @string.Format("{0:N0}", item.ProductVariant?.Price) đ
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="fw-bold text-danger fs-8">
+                                    @string.Format("{0:N0}", subTotal) đ
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-dashed mb-4">
+                        <span class="fw-bold text-dark fs-6">Tổng thanh toán:</span>
+                        <span class="fw-bold text-danger fs-4">@string.Format("{0:N0}", Model.TotalOrderPrice) đ</span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-danger rounded-0 py-3 fw-bold text-uppercase tracking-wider shadow-sm fs-7">
+                            Xác nhận đặt hàng
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="@Url.Action("Index", "Cart")" class="text-secondary fs-8 text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i> Quay lại giỏ hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .fs-8 {
+        font-size: 13px !important;
+    }
+
+    .fs-7 {
+        font-size: 14px !important;
+    }
+
+    .border-dashed {
+        border-top-style: dashed !important;
+    }
+</style>

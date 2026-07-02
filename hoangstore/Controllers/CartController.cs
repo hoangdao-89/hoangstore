@@ -122,7 +122,8 @@ namespace hoangstore.Controllers
             {
                 success = true,
                 newCount = totalCartItems,
-                message = "Đã thêm vào giỏ hàng thành công!"
+                message = "Đã thêm vào giỏ hàng thành công!",
+                cartItemId = cartItem.Id
             });
         }
         [HttpPost]
@@ -190,6 +191,7 @@ namespace hoangstore.Controllers
             }
             return Json(new { success = true });
         }
+
 
     }
 }
