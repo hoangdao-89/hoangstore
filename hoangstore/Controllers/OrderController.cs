@@ -1,5 +1,6 @@
 ﻿using hoangstore.Data;
 using hoangstore.Models;
+using hoangstore.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -96,7 +97,7 @@ namespace hoangstore.Controllers
                 PaymentMethod = order.PaymentMethod,
                 TotalPrice = totalOrderPrice,
                 OrderDate = DateTime.Now,
-                Status = "Chờ xử lý"
+                Status = OrderStatus.Pending
             };
             
             _db.Orders .Add(newOrder);

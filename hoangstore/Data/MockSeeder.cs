@@ -23,7 +23,7 @@ namespace hoangstore.Data
                 defaultCategory = new Category
                 {
                     Category_Name = "Áo Local Brand",
-                    IsDelete = false,
+                    IsDeleted = false,
                     CreatedDate = DateTime.Now,
                     CreatedBy = "System"
                 };
@@ -38,14 +38,14 @@ namespace hoangstore.Data
             {
                 Product_Name = "Áo T-Shirt Local Brand Oversize Cotton 100%",
                 Product_Description = "Chất liệu cotton 100% co giãn 4 chiều, dày dặn, thấm hút mồ hôi cực tốt.",
-                Price = 299000,
-                Quantity = 35,
+                
+                
                 Image_Url = "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=500&auto=format&fit=crop",
                 IsFeatured = true,
                 CreatedDate = DateTime.Now,
                 CreatedBy = "Hoàng Đào Xuân",
-                IsDelete = false,
-                DeleteDate = DateTime.Now,
+                IsDeleted = false,
+                DeletedDate = DateTime.Now,
                 CategoryId = cateId
             };
             context.Products.Add(p1);
@@ -63,14 +63,13 @@ namespace hoangstore.Data
             {
                 Product_Name = "Áo Hoodie Premium Heavyweight Black",
                 Product_Description = "Áo hoodie nỉ bông định lượng cao, form dáng boxy trendy.",
-                Price = 450000,
-                Quantity = 13,
+              
                 Image_Url = "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=500&auto=format&fit=crop",
                 IsFeatured = false,
                 CreatedDate = DateTime.Now,
                 CreatedBy = "Hoàng Đào Xuân",
-                IsDelete = false,
-                DeleteDate = DateTime.Now,
+                IsDeleted = false,
+                DeletedDate = DateTime.Now,
                 CategoryId = cateId
             };
             context.Products.Add(p2);
@@ -83,7 +82,7 @@ namespace hoangstore.Data
             };
             context.ProductVariants.AddRange(variantsOfP2);
 
-            // CHỐT SỔ LƯU TOÀN BỘ XUỐNG SQL SERVER
+            // luu xung db
             context.SaveChanges();
         }
     }

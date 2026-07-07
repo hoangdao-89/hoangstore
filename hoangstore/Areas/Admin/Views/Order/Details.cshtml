@@ -1,0 +1,160 @@
+﻿@model hoangstore.Models.Order
+@using hoangstore.Models.Enums
+@using hoangstore.Helpers
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="contain p-3">
+    <div class="row pt-3">
+        <div class="col-6">
+            <h2 style="color:purple">
+                Chi tiết đơn hàng #HS-@Model.Id
+            </h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-3 g-3">
+        <div class="col-md-6">
+            <table class="table table-bordered text-start">
+                <tbody>
+                    <tr>
+                        <th style="width: 160px; background-color: #f8f9fa;">Người nhận:</th>
+                        <td class="fw-bold">@Model.ReceiverName</td>
+                    </tr>
+                    <tr>
+                        <th style="background-color: #f8f9fa;">Số điện thoại:</th>
+                        <td>@Model.ReceiverPhone</td>
+                    </tr>
+                    <tr>
+                        <th style="background-color: #f8f9fa;">Địa chỉ giao hàng:</th>
+                        <td>@Model.ShippingAddress</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <table class="table table-bordered text-start">
+                <tbody>
+                    <tr>
+                        <th style="width: 160px; background-color: #f8f9fa;">Ngày đặt hàng:</th>
+                        <td>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                    </tr>
+                    <tr>
+                        <th style="background-color: #f8f9fa;">Hình thức:</th>
+                        <td class="fw-bold" style="color: purple;">@Model.PaymentMethod</td>
+                    </tr>
+                    <tr>
+                        <th style="background-color: #f8f9fa;">Trạng thái đơn:</th>
+                        <td class="fw-bold">@Model.Status.ToDisplayName()</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-2" style="color:purple">Sản phẩm đã mua</h4>
+    <table class="table table-bordered text-center align-middle">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 80px;">Ảnh</th>
+                <th>Tên sản phẩm</th>
+                <th>Phân loại</th>
+                <th>Đơn giá</th>
+                <th>Số lượng</th>
+                <th>Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderDetails)
+            {
+                var subTotal = item.Price * item.Quantity;
+                <tr>
+                    <td>
+                        <img src="@(string.IsNullOrEmpty(item.ProductVariant?.Variant_Image_Url) ? item.ProductVariant?.Product?.Image_Url : item.ProductVariant.Variant_Image_Url)"
+                             class="border" style="width: 50px; height: 50px; object-fit: cover;">
+                    </td>
+                    <td class="text-start fw-bold">@item.ProductVariant?.Product?.Product_Name</td>
+                    <td>@item.ProductVariant?.Size / @item.ProductVariant?.Color</td>
+                    <td>@string.Format("{0:N0}", item.Price) đ</td>
+                    <td>@item.Quantity</td>
+                    <td class="fw-bold text-danger">@string.Format("{0:N0}", subTotal) đ</td>
+                </tr>
+            }
+            <tr>
+                <td colspan="5" class="text-end fw-bold" style="background-color: #f8f9fa;">Tổng cộng:</td>
+                <td class="fw-bold text-danger fs-5" style="background-color: #f8f9fa;">@string.Format("{0:N0}", Model.TotalPrice) đ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="row pt-3">
+        <div class="col-12 text-center">
+            @if (Model.Status != OrderStatus.Delivered && Model.Status != OrderStatus.Cancelled)
+            {
+                <form id="statusForm" asp-action="UpdateStatus" asp-controller="Order" asp-area="Admin" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    <input type="hidden" id="newStatusInput" name="orderStatus" value="" />
+
+                    @if (Model.Status == OrderStatus.Pending)
+                    {
+                        <button type="button" class="btn btn-primary me-2" style="background-color: purple; border:none" onclick="confirmStatusUpdate(@((int)OrderStatus.Shipping), 'Xác nhận chuyển đơn hàng này sang trạng thái ĐANG GIAO?')">
+                            <i class="bi bi-truck"></i> Xác nhận giao hàng
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" onclick="confirmStatusUpdate(@((int)OrderStatus.Cancelled), 'Bạn có chắc chắn muốn HỦY đơn hàng này?')">
+                            Hủy đơn hàng
+                        </button>
+                    }
+                    else if (Model.Status == OrderStatus.Shipping)
+                    {
+                        <button type="button" class="btn btn-success me-2 text-white" onclick="confirmStatusUpdate(@((int)OrderStatus.Delivered), 'Xác nhận đơn hàng đã GIAO THÀNH CÔNG?')">
+                            <i class="bi bi-check-lg"></i> Khách đã nhận hàng
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" onclick="confirmStatusUpdate(@((int)OrderStatus.Cancelled), 'Xác nhận GIAO THẤT BẠI và hủy đơn hàng?')">
+                            Giao thất bại (Hủy đơn)
+                        </button>
+                    }
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-secondary d-inline-block px-5 rounded-0">
+                    <i class="bi bi-info-circle-fill me-2"></i> Đơn hàng này đã đóng luồng xử lý (Đã giao hoặc Đã hủy).
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        
+        function confirmStatusUpdate(orderStatus, message) {
+            Swal.fire({
+                title: message,
+                icon: 'question',
+                showCancelButton: true,
+                cancelButtonColor: 'purple', 
+                confirmButtonColor: '#28a745',
+                confirmButtonText: 'Xác nhận',
+                cancelButtonText: 'Quay lại'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    
+                    $("#newStatusInput").val(orderStatus);
+
+                    
+                    $("#statusForm").submit();
+                }
+            });
+        }
+    </script>
+}

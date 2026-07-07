@@ -1,0 +1,109 @@
+﻿@model IEnumerable<hoangstore.Models.Order>
+@using hoangstore.Models.Enums
+@using hoangstore.Helpers
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    var currentFilter = ViewBag.CurrentFilter as OrderStatus?;
+}
+
+<div class="contain p-3">
+    <div class="row pt-3 align-items-center">
+        <div class="col-4">
+            <h2 style="color:purple" class="m-0">
+                Danh sách Đơn hàng
+            </h2>
+        </div>
+        <div class="col-8 text-end">
+            <div class="btn-group" role="group">
+                <a href="@Url.Action("Index", "Order", new { area = "Admin" })"
+                   class="btn btn-sm @(currentFilter == null ? "btn-primary" : "btn-outline-primary")"
+                   style="@(currentFilter == null ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
+                    Tất cả
+                </a>
+                <a href="@Url.Action("Index", "Order", new { area = "Admin", orderStatus = OrderStatus.Pending })"
+                   class="btn btn-sm @(currentFilter == OrderStatus.Pending ? "btn-primary" : "btn-outline-primary")"
+                   style="@(currentFilter == OrderStatus.Pending ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
+                    Chờ xử lý
+                </a>
+                <a href="@Url.Action("Index", "Order", new { area = "Admin", orderStatus = OrderStatus.Shipping })"
+                   class="btn btn-sm @(currentFilter == OrderStatus.Shipping ? "btn-primary" : "btn-outline-primary")"
+                   style="@(currentFilter == OrderStatus.Shipping ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
+                    Đang giao
+                </a>
+                <a href="@Url.Action("Index", "Order", new { area = "Admin", orderStatus = OrderStatus.Delivered })"
+                   class="btn btn-sm @(currentFilter == OrderStatus.Delivered ? "btn-primary" : "btn-outline-primary")"
+                   style="@(currentFilter == OrderStatus.Delivered ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
+                    Đã giao
+                </a>
+                <a href="@Url.Action("Index", "Order", new { area = "Admin", orderStatus = OrderStatus.Cancelled })"
+                   class="btn btn-sm @(currentFilter == OrderStatus.Cancelled ? "btn-primary" : "btn-outline-primary")"
+                   style="@(currentFilter == OrderStatus.Cancelled ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
+                    Đã hủy
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered mt-3 text-center align-middle">
+        <thead>
+            <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Điện thoại</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Thanh toán</th>
+                <th>Trạng thái</th>
+                <th>Hoạt động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="8" class="text-muted py-4">Không có đơn hàng nào trong danh mục này.</td>
+                </tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-bold text-dark">#HS-@item.Id</td>
+                    <td>@item.ReceiverName</td>
+                    <td>@item.ReceiverPhone</td>
+                    <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="fw-bold text-danger">@string.Format("{0:N0}", item.TotalPrice) đ</td>
+                    <td>
+                        <span class="badge @(item.PaymentMethod == "COD" ? "bg-secondary" : "bg-info text-dark")">
+                            @item.PaymentMethod
+                        </span>
+                    </td>
+                    <td>
+                        @if (item.Status == OrderStatus.Pending)
+                        {
+                            <span class="text-warning fw-bold"><i class="bi bi-clock-history me-1"></i>Chờ xử lý</span>
+                        }
+                        else if (item.Status == OrderStatus.Shipping)
+                        {
+                            <span class="text-primary fw-bold"><i class="bi bi-truck me-1"></i>Đang giao</span>
+                        }
+                        else if (item.Status == OrderStatus.Delivered)
+                        {
+                            <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Đã giao</span>
+                        }
+                        else if (item.Status == OrderStatus.Cancelled)
+                        {
+                            <span class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Đã hủy</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a asp-area="Admin" asp-controller="Order" asp-action="Details" asp-route-id="@item.Id"
+                               class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -3,7 +3,13 @@
 @{
     var availableSizes = Model.ProductVariants.Select(p => p.Size).Distinct().OrderBy(s => s).ToList();
     var availableColors = Model.ProductVariants.Select(p => p.Color).Distinct().OrderBy(s => s).ToList();
+
+    // TÍNH TOÁN GIÁ THẤP NHẤT ĐỂ HIỂN THỊ ĐẠI DIỆN LÚC BAN ĐẦU
+    var minPrice = Model.ProductVariants != null && Model.ProductVariants.Any()
+                   ? Model.ProductVariants.Min(v => v.Price)
+                   : 0;
 }
+
 <div class="modal-header border-0 pb-0">
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
@@ -19,7 +25,16 @@
                 <span class="text-muted text-uppercase small tracking-wider">Hoàng Store / @(Model.Category?.Category_Name ?? "Local Brand")</span>
                 <h3 class="fw-bold text-uppercase mt-1 mb-2" style="letter-spacing: -0.5px;">@Model.Product_Name</h3>
 
-                <h4 class="text-danger fw-bold mb-3" id="quickViewPrice">@Model.Price.ToString("#,##0") đ</h4>
+                <h4 class="text-danger fw-bold mb-3" id="quickViewPrice">
+                    @if (minPrice > 0)
+                    {
+                        <span>Từ @minPrice.ToString("#,##0") đ</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted fs-6 fw-normal">Chưa cập nhật giá</span>
+                    }
+                </h4>
 
                 <hr class="my-3" style="border-top: 1px dashed #ddd;" />
 
@@ -27,9 +42,7 @@
 
                 <form id="frmQuickAddToCart">
                     <input type="hidden" name="ProductId" value="@Model.ProductId" />
-
                     <input type="hidden" id="selectedVariantId" name="variantId" value="" />
-
                     <input type="hidden" id="currentAction" name="" value="" />
 
                     <div class="mb-3">
@@ -79,12 +92,12 @@
 
 <script>
     var productVariants = @Html.Raw(Json.Serialize(Model.ProductVariants.Select(v => new
-        {
+    {
             id = v.Id,
             size = v.Size,
             color = v.Color,
             quantity = v.Quantity,
             price = v.Price,
             variant_Image_Url = v.Variant_Image_Url
-    })))
+    })));
 </script>

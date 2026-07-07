@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace hoangstore.Models;
-public class Category
+public class Category : IAuditable
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -22,29 +22,17 @@ public class Category
     [Range(1, 100, ErrorMessage = "Thứ tự từ 1-100")]
     public int DisplayOrder { get; set; }
 
-    [Display(Name = "Ngày tạo")]
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
-
-    [Display(Name = "Người tạo")]
-    public string? CreatedBy { get; set; }
-
     [Display(Name = "Trạng thái hiển thị")]
     public bool IsActive { get; set; } = true;
-
-    [Display(Name = "Ngày cập nhật")]
+    //
+    //
+    public string CreatedBy { get; set; }
+    public DateTime? CreatedDate { get; set; }
+    public string ModifiedBy { get; set; }
     public DateTime? ModifiedDate { get; set; }
-
-    [Display(Name = "Người cập nhật")]
-    public string? ModifiedBy { get; set; }
-
-    [Display(Name = "Xóa")]
-    public bool IsDelete { get; set; } = false;
-
-    [Display(Name = "Người xóa")]
-    public string? DeleteBy { get; set; }
-
-    [Display(Name = "Ngày xóa")]
-    public DateTime? DeleteDate { get; set; } 
+    public string DeletedBy { get; set; }
+    public DateTime? DeletedDate { get; set; }
+    public bool IsDeleted { get; set; } = false;
 
     public ICollection<Product> Products { get; set; } = new List<Product>();
 }

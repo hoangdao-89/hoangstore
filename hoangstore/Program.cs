@@ -3,6 +3,8 @@ using hoangstore.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 //dang ky chuoi ket noi vao he thong
 builder.Services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -15,6 +17,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.S
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+//Kich hoat bo doc HTTP context de tu dong lay thong tin admin dang thao tac
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

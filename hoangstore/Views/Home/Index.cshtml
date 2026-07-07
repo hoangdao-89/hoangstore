@@ -23,6 +23,11 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
         @foreach (var item in Model)
         {
+            // TÍNH TOÁN GIÁ THẤP NHẤT TỪ DANH SÁCH BIẾN THỂ ĐỂ HIỂN THỊ
+            var minPrice = item.ProductVariants != null && item.ProductVariants.Any()
+                           ? item.ProductVariants.Min(v => v.Price)
+                           : 0;
+
             <div class="col torano-product-card">
                 <div class="card h-100 shadow-sm border-0 position-relative rounded-0 transition-transform">
                     <img src="@(string.IsNullOrEmpty(item.Image_Url) ? "https://placehold.co/400x400?text=" + item.Product_Name : item.Image_Url)" class="card-img-top p-0 rounded-0" alt="@item.Product_Name" style="object-fit: cover; aspect-ratio: 1/1;">
@@ -37,7 +42,14 @@
                         </h6>
 
                         <p class="card-text text-danger fw-bold fs-6 mb-2">
-                            @string.Format("{0:N0}", item.Price) đ
+                            @if (minPrice > 0)
+                            {
+                                <span>Từ @string.Format("{0:N0}", minPrice) đ</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small fw-normal">Chưa cập nhật giá</span>
+                            }
                         </p>
 
                         @if (item.ProductVariants != null && item.ProductVariants.Any())
@@ -85,9 +97,7 @@
     </div>
 </div>
 
-
 <style>
-    /* Hiệu ứng mượt mà khi hover vào thẻ sản phẩm */
     .torano-product-card .card {
         transition: transform 0.2s, box-shadow 0.2s;
     }
@@ -101,103 +111,87 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-      
-       //
-       //KHI BAM VAO NUT THEM OR MUA
-       $(document).on('click','.btn-quick-view', function(){
-           var productId = $(this).data('id');
-           //lay ra action
-           var action = $(this).data('action')
-           //day ajax len controller de lay giao dien chi tiet san pham
-           $.ajax({
-               url: '/Home/GetQuickView/' + productId,
-               type:'GET',
-               success: function(res){
-                   //do code html vao modal
-                   $('#quickViewModalBody').html(res);
-                   //hien thi modal len man hinh
-                   $('#quickViewModal').modal('show');
-                   //luu lai hanh dong vao input an trong modal
-                   $('#currentAction').val(action);
+        // KHI BAM VAO NUT THEM OR MUA
+        $(document).on('click','.btn-quick-view', function(){
+            var productId = $(this).data('id');
+            var action = $(this).data('action');
+            
+            $.ajax({
+                url: '/Home/GetQuickView/' + productId,
+                type:'GET',
+                success: function(res){
+                    $('#quickViewModalBody').html(res);
+                    $('#quickViewModal').modal('show');
+                    $('#currentAction').val(action);
+                },
+                error: function(){
+                    Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ lúc này!', 'error');
+                }
+            });
+        });
 
-               },
-               error: function(){
-                   Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ lúc này!', 'error');
-               }
-           });
-       });
+        var selectedSize = null;
+        var selectedColor = null;
 
-       var selectedSize = null;
-       var selectedColor = null;
-       //
-       //BAM CHON SIZE TRONG MODAL
-       $(document).on('click', '.btn-select-size', function(){
-           $('.btn-select-size').removeClass('active-variant');
-           $(this).addClass('active-variant');
-           selectedSize = $(this).data('size');
-           checkMatchingVariant();
-       });
-       //
-       //BAM CHON MAU 
-       $(document).on('click', '.btn-select-color', function(){
-           $('.btn-select-color').removeClass('active-variant');
-           $(this).addClass('active-variant');
-           selectedColor = $(this).data('color');
-           checkMatchingVariant();
-       })
-       //
-       //TIIM KIEM BIEN THE
-       function checkMatchingVariant(){
+        // BAM CHON SIZE TRONG MODAL
+        $(document).on('click', '.btn-select-size', function(){
+            $('.btn-select-size').removeClass('active-variant');
+            $(this).addClass('active-variant');
+            selectedSize = $(this).data('size');
+            checkMatchingVariant();
+        });
+
+        // BAM CHON MAU 
+        $(document).on('click', '.btn-select-color', function(){
+            $('.btn-select-color').removeClass('active-variant');
+            $(this).addClass('active-variant');
+            selectedColor = $(this).data('color');
+            checkMatchingVariant();
+        });
+
+        // TIM KIEM BIEN THE
+        function checkMatchingVariant(){
             $('#selectedVariantId').val('');
             $('#variantStockInfo').html('');
             $('#btnConfirmAddToCart').prop('disabled', true);
-           //newu chua chon du ca size cva mau thi thoat
-           if(!selectedColor || !selectedSize) return;
-           //duyet productVatiants(thuoc PartialView) de tim bien the khop
-           var match = productVariants.find(v => v.size == selectedSize && v.color == selectedColor);
+            
+            if(!selectedColor || !selectedSize) return;
+            var match = productVariants.find(v => v.size == selectedSize && v.color == selectedColor);
 
-           if(match && match.quantity > 0){
-               //gan id bien the vao input an trong form
+            if(match && match.quantity > 0){
                 $('#selectedVariantId').val(match.id);
-                //doi gia theo bien the
                 $('#quickViewPrice').text(match.price.toLocaleString('vi-VN') + ' đ');
                 $('#variantStockInfo').html('<i class="bi bi-check-circle text-success"></i> Còn lại: ' + match.quantity + ' sản phẩm');
-                //mo khoa nut xac nhan
                 $('#btnConfirmAddToCart').prop('disabled', false);
-                //neu bien the co file anh rieng
                 if(match.variant_Image_Url) {
                     $('#quickViewImage').attr('src', match.variant_Image_Url);
                 }
-           }
-           else{
-            //TH: het cap size mau nay
-            $('#selectedVariantId').val('');
-            $('#variantStockInfo').html('<i class="bi bi-x-circle text-danger"></i> Phiên bản này đã hết hàng!');
-            $('#btnConfirmAddToCart').prop('disabled', true);
-           }
-       }
-       //
-       //BAM COMFIRN ==> LUU VAO DB
+            }
+            else{
+                $('#selectedVariantId').val('');
+                $('#variantStockInfo').html('<i class="bi bi-x-circle text-danger"></i> Phiên bản này đã hết hàng!');
+                $('#btnConfirmAddToCart').prop('disabled', true);
+            }
+        }
+
+        // BAM CONFIRM ==> LUU VAO DB
         $(document).on('click', '#btnConfirmAddToCart', function(){
-            //gom toan bo du lieu cua form lai
             var formData = $('#frmQuickAddToCart').serialize();
             var actionType = $('#currentAction').val();
+            
             $.ajax({
                 url: '/Cart/AddToCart',
                 type: 'POST',
                 data: formData,
                 success: function(res){
                     if(res.success){
-                        //cap nhat con so gio hang o header
                         $('.badge-count').text(res.newCount);
-                        //an modal di
                         $('#quickViewModal').modal('hide');
-                        //dieu huong theo action
                         if(actionType == 'buy-now'){
                            window.location.href = '/Cart/Index?buyNowId=' + res.cartItemId;
                         }
                         else{
-                           Swal.fire({
+                            Swal.fire({
                                 icon: 'success',
                                 title: 'Thành công',
                                 text: res.message || 'Đã thêm vào giỏ hàng!',
@@ -215,7 +209,6 @@
                     }
                 }
             });
-
         });
     </script>
 }

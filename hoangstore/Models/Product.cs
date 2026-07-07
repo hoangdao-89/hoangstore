@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace hoangstore.Models;
-public class Product
+public class Product: IAuditable
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -17,44 +17,21 @@ public class Product
     [Required(ErrorMessage = "Mô tả là bắt buộc")]
     [Display(Name = "Mô tả")]
     public string? Product_Description { get; set; }
-
-    [Required(ErrorMessage = "Giá tiền là bắt buộc")]
-    [Display(Name = "Giá tiền")]
-    [Column(TypeName = "decimal(18,2)")]
-    [Range(0, double.MaxValue)]
-    public decimal Price { get; set; }
-
-    [Required(ErrorMessage = "Số lượng còn là bắt buộc")]
-    [Display(Name = "Số lượng còn")]
-    public int Quantity { get; set; }
-
     [Required(ErrorMessage = "Link ảnh là bắt buộc")]
     [Display(Name = "Link ảnh")]
     public string? Image_Url { get; set; }
 
     [Display(Name = "Sản phẩm nổi bật")]
     public bool IsFeatured { get; set; } = false;
-
-    [Display(Name = "Ngày tạo")]
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
-
-    [Display(Name = "Người tạo")]
-    public string? CreatedBy { get; set; }
-
-    [Display(Name = "Ngày cập nhật")]
+    //
+    //
+    public string CreatedBy { get; set; }
+    public DateTime? CreatedDate { get; set; }
+    public string ModifiedBy { get; set; }
     public DateTime? ModifiedDate { get; set; }
-
-    [Display(Name = "Người cập nhật")]
-    public string? ModifiedBy { get; set; }
-
-    [Display(Name = "Xóa")]
-    public bool IsDelete { get; set; } = false;
-
-    [Display(Name = "Người xóa")]
-    public string? DeleteBy { get; set; }
-
-    [Display(Name = "Ngày xóa")]
-    public DateTime? DeleteDate { get; set; } // Sửa thành nullable
+    public string DeletedBy { get; set; }
+    public DateTime? DeletedDate { get; set; }
+    public bool IsDeleted { get; set; } = false;
 
     public int CategoryId { get; set; }
     [ForeignKey("CategoryId")]

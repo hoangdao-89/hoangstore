@@ -25,7 +25,7 @@ namespace hoangstore.Areas.Admin.Controllers
         //danh sach categori
         public async Task<IActionResult> Index()
         {
-            var CategoriesList = await _db.Categories.Where(c => c.IsDelete==false).ToListAsync();
+            var CategoriesList = await _db.Categories.Where(c => c.IsDeleted==false).ToListAsync();
             return View(CategoriesList);
         }
         //them categori
@@ -35,7 +35,7 @@ namespace hoangstore.Areas.Admin.Controllers
         }
         [HttpPost]
         public async Task<IActionResult> Create(Category category) {
-            await Auditing(category, "create");
+           
             if (!ModelState.IsValid)
             {
                 return View(category);
@@ -58,7 +58,7 @@ namespace hoangstore.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Category category)
         {
-            await Auditing(category, "edit");
+            
             if (!ModelState.IsValid)
             {
                 return View(category);
@@ -83,38 +83,12 @@ namespace hoangstore.Areas.Admin.Controllers
             
             var category = await _db.Categories.FindAsync(id);
             if(category == null) return Json(new {success=false});
-            await Auditing(category, "delete");
             _db.Categories.Update(category);
             await _db.SaveChangesAsync();
          
             return Json(new {success=true});
         }
-        private async Task<string> GetCurrentAdmin()
-        {
-            var currentAdmin = await _um.GetUserAsync(User);
-            return currentAdmin != null ? $"{currentAdmin.FirstName} {currentAdmin.LastName}" : "Admin";
-        }
-        private async Task Auditing(Category category, string action)
-        {
-            string AdminName = await GetCurrentAdmin();
-            switch (action.ToUpper())
-            {
-                case "CREATE":
-                    category.CreatedDate = DateTime.Now;
-                    category.CreatedBy = AdminName;
-                    ModelState.Remove("CreatedBy");
-                    break;
-                case "EDIT":
-                    category.ModifiedDate = DateTime.Now;
-                    category.ModifiedBy = AdminName;
-                    break;
-                case "DELETE":
-                    category.IsDelete = true;
-                    category.DeleteDate = DateTime.Now;
-                    category.DeleteBy = AdminName;
-                    break;
-            }
-        }
+        
 
     }
 }
