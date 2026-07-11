@@ -15,131 +15,7 @@
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-    <style>
-       body{
-            font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
-       }
-
-        .container-wide {
-            width: 100%;
-            max-width: 1440px; 
-            margin-right: auto;
-            margin-left: auto;
-            padding-right: 20px;
-            padding-left: 20px;
-        }
-        
-        .top-utility-bar{
-            background-color:#000;
-            color:#fff;
-            font-size:13px;
-            padding:8px 0;
-            letter-spacing:0.5px;
-        }
-        .main-header{
-                background-color: #fff;
-                padding: 12px 0;
-                border-bottom: 1px solid #eee;
-        }
-
-        .header-menu .nav-link {
-            color: #000;
-            text-transform: uppercase;
-            font-weight: 600;
-            font-size: 13px;
-            letter-spacing: 1px;
-            padding: 10px 20px !important;
-            transition: color 0.2s ease;
-            position: relative;
-        }
-
-        .header-menu .nav-link.text-danger {
-            color: #dc3545 !important;
-        }
-
-        .header-menu .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 2px;
-            left: 20px;
-            background-color: #000;
-            transition: width 0.3s ease;
-        }
-        .header-menu .nav-link:hover::after {
-            width: calc(100% - 40px);
-        }
-
-        /* Dropdown của danh mục Nam / Nữ */
-        .dropdown-menu-nam, .dropdown-menu-nu {
-            border-radius: 0;
-            border: 1px solid #eee;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        .dropdown-item-nam, .dropdown-item-nu {
-            font-size: 13px;
-            padding: 8px 25px;
-        }
-
-        .dropdown-item-nam:hover, .dropdown-item-nu:hover {
-            background-color: #f8f9fa;
-            color: #000;
-        }
-
-        /* Cụm tiện ích phải */
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 22px;
-        }
-
-        .header-right a {
-            color: #000;
-            font-size: 22px;
-            position: relative;
-            transition: color 0.2s;
-        }
-
-        .header-right a:hover {
-            color: #555;
-        }
-
-        /* Ô tìm kiếm co giãn nhẹ khi click */
-        .search-box input {
-            font-size: 13px;
-            border-radius: 20px;
-            padding-right: 35px;
-            width: 170px;
-            transition: width 0.3s ease;
-        }
-
-        .search-box input:focus {
-            width: 210px;
-            box-shadow: none;
-            border-color: #000;
-        }
-
-        /* Số hiển thị trên giỏ hàng */
-        .badge-count {
-        position: absolute;
-        top: -5px;
-        right: -10px;
-        background-color: #dc3545; /* Đổi sang màu đỏ cho nổi bật, kích thích mua hàng */
-        color: #fff;
-        font-size: 9px;
-        font-weight: bold;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    </style>
+ 
 </head>
 <body>
 
@@ -151,9 +27,23 @@
                </div>
                <div class="top-bar-right d-flex gap-3">
                    <div class="auth-features">
-                        <a asp-area="Identity" asp-page="/Account/Login" class="text-white text-decoration-none">Đăng nhập</a>
-                        <span class="text-white mx-1">|</span>
-                        <a asp-area="Identity" asp-page="/Account/Register" class="text-white text-decoration-none">Đăng ký</a>
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Manage/Index" class="text-white text-decoration-none">
+                                Hi, @(User.FindFirst("FirstName")?.Value ?? User.Identity.Name)
+                            </a>
+                            <span class="text-white mx-1">|</span>
+
+                            <form id="logoutForm" class="d-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                                <a href="javascript:void(0)" onclick="document.getElementById('logoutForm').submit()" class="text-white text-decoration-none">Đăng xuất</a>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="text-white text-decoration-none">Đăng nhập</a>
+                            <span class="text-white mx-1">|</span>
+                            <a asp-area="Identity" asp-page="/Account/Register" class="text-white text-decoration-none">Đăng ký</a>
+                        }
                    </div>
                </div>
            </div>
@@ -229,9 +119,9 @@
                       <span class="badge-count">@ViewBag.ProductlistsCount</span>    
                   </a>
                   <!--Gio hang-->
-                  <a href="#" title="Giỏ hàng">
+                  <a asp-action="Index" asp-controller="Cart" title="Giỏ hàng">
                       <i class="bi bi-bag"></i>
-                        <span class="badge-count">@ViewBag.CartCount</span>
+                        @await Component.InvokeAsync("CartCount")
                   </a>
               </div>
            </div>

@@ -2,45 +2,61 @@
 
 <div class="container mt-3">
     <form method="post">
-        <input type="hidden" asp-for="Product_Id" />
-        <div class="border p-3 shadow sm-">
+        <input type="hidden" asp-for="ProductId" />
+
+        <div class="border p-3 shadow-sm">
             <h2 style="color:purple">Sửa sản phẩm</h2>
             <hr />
+
             <div class="mb-3">
                 <label class="form-label">Tên sản phẩm</label>
                 <input asp-for="Product_Name" class="form-control" />
                 <span asp-validation-for="Product_Name" class="text-danger"></span>
             </div>
+
             <div class="mb-3">
-                <label class="form-label">Giá</label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
+                <label class="form-label">Link ảnh sản phẩm</label>
+                <input asp-for="Image_Url" class="form-control" />
+                <span asp-validation-for="Image_Url" class="text-danger"></span>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Mô tả</label>
-                <input asp-for="Product_Description" class="form-control" />
+                <textarea asp-for="Product_Description" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Product_Description" class="text-danger"></span>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Số lượng</label>
-                <input asp-for="Quantity" class="form-control" />
-                <span asp-validation-for="Quantity" class="text-danger"></span>
+
+            <div class="mb-3 form-check d-flex align-items-center gap-2">
+                <input type="checkbox" asp-for="IsFeatured" class="form-check-input" id="isFeaturedCheck" style="cursor: pointer;" />
+                <label for="isFeaturedCheck" class="form-check-label" style="cursor: pointer; user-select: none;">Sản phẩm nổi bật (Hiển thị trang chủ)</label>
+                <span asp-validation-for="IsFeatured" class="text-danger"></span>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Danh mục</label>
                 <select asp-for="CategoryId" class="form-select">
-                    <option disabled >--Chọn danh mục--</option>
-                    @foreach (var item in ViewBag.CategoryList)
+                    <option disabled>--Chọn danh mục--</option>
+                    @if (ViewBag.CategoryList != null)
                     {
-                        <option value="@item.CatId">@item.CatName</option>
+                        foreach (var item in ViewBag.CategoryList)
+                        {
+                            <option value="@item.CatId">@item.CatName</option>
+                        }
                     }
                 </select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
+
             <div class="mt-4">
-                <button type="submit" class="btn btn-primary" style="background-color: purple; border:none; width:150px" ;>Lưu lại</button>
+                <button type="submit" class="btn btn-primary" style="background-color: purple; border:none; width:150px;">Lưu lại</button>
                 <a asp-action="Index" class="btn btn-secondary" style="width:150px">Quay lại</a>
             </div>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}

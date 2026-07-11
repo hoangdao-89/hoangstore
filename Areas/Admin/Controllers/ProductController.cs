@@ -23,7 +23,7 @@ namespace hoangstore.Areas.Admin.Controllers
         //Trang danh sach san pham
         public async Task<IActionResult> Index()
         {
-            var ProductList = await _db.Products.Include(u => u.Category).Where(p=>p.IsDelete==false && p.Category!=null && p.Category.IsDelete ==false).ToListAsync();
+            var ProductList = await _db.Products.Include(u => u.Category).Where(p=>p.IsDeleted==false && p.Category!=null && p.Category.IsDeleted ==false).ToListAsync();
             return View(ProductList);
         }
         //Them moi
@@ -36,7 +36,7 @@ namespace hoangstore.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product)
         {
-            await Auditing(product, "create");
+            
             if (!ModelState.IsValid)
             {
                 await GetCategoryName();
@@ -60,18 +60,18 @@ namespace hoangstore.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Product product)
         {
-            await Auditing(product, "edit");
+            
             if (!ModelState.IsValid)
             {
                 await GetCategoryName();
                 return View(product);
             }
-            var ProductInDB = await _db.Products.FindAsync(product.Product_Id);
+            var ProductInDB = await _db.Products.FindAsync(product.ProductId);
             if(ProductInDB == null) return NotFound();
             ProductInDB.Product_Name = product.Product_Name;
-            ProductInDB.Price = product.Price;
+            
             ProductInDB.Product_Description = product.Product_Description;
-            ProductInDB.Quantity = product.Quantity;
+            
             ProductInDB.CategoryId = product.CategoryId;
 
             ProductInDB.ModifiedDate = product.ModifiedDate;
@@ -86,42 +86,17 @@ namespace hoangstore.Areas.Admin.Controllers
         public async Task<IActionResult> Delete(int id) {
             var product = await _db.Products.FindAsync(id);
             if (product == null) return Json(new {success=false});
-            await Auditing(product, "delete");
+            
+            _db.Products.Update(product);
             await _db.SaveChangesAsync();
             return Json(new { success = true});
         }
-       private async Task<string> GetCurrentAdmin()
-        {
-            var currentAdmin = await _um.GetUserAsync(User);
-            return currentAdmin != null ? $"{currentAdmin.LastName} {currentAdmin.FirstName}" : "Admin";
-        }
-        private async Task Auditing(Product product, string action)
-        {
-            string AdminName = await GetCurrentAdmin();
-            switch (action.ToUpper())
-            {
-                case "CREATE":
-                    product.CreatedDate = DateTime.Now;
-                    product.CreatedBy = AdminName;
-                    ModelState.Remove("CreatedBy");
-                    break;
-                case "EDIT":
-                    product.ModifiedDate = DateTime.Now;
-                    product.ModifiedBy = AdminName;
-                    break;
-                case "DELETE":
-                    product.IsDelete = true;
-                    product.DeleteDate= DateTime.Now;
-                    product.DeleteBy = AdminName;
-                    break;
-            }
-
-        }
+       
         private async Task GetCategoryName()
         {
-            ViewBag.CategoryList = await _db.Categories.Where(c => c.IsDelete == false).Select(c=> new
+            ViewBag.CategoryList = await _db.Categories.Where(c => c.IsDeleted == false).Select(c=> new
             {
-                CatId = c.Category_Id,
+                CatId = c.CategoryId,
                 CatName = c.Category_Name
             }).ToListAsync();
         }

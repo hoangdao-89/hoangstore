@@ -16,11 +16,13 @@ namespace hoangstore.Models
         [Required(ErrorMessage = "Địa chỉ không được để trống"), StringLength(256)]
         [Display(Name ="Địa chỉ")]
         public string Address {  get; set; }
+        [Phone]
         [Required(ErrorMessage = "Số điện thoại không được để trống")]
-        [Phone(ErrorMessage ="Số điện thoại")]
+        [Display(Name = "Số điện thoại")]
         public override string PhoneNumber { get; set; }
         [Required(ErrorMessage = "Email không được để trống")]
-        [EmailAddress(ErrorMessage ="Email")]
+        [EmailAddress]
+        [Display(Name = "Email")]
         public override string Email { get ; set ; }
     }
 }
