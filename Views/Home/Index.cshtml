@@ -2,95 +2,273 @@
 
 @{
     ViewData["Title"] = "Trang chủ - HoangStore";
+
+    var products = Model?.ToList()
+                   ?? new List<hoangstore.Models.Product>();
+
+    var searchTerm =
+        Context.Request.Query["searchTerm"]
+            .ToString()
+            .Trim();
+
+    var isSearching =
+        !string.IsNullOrWhiteSpace(searchTerm);
 }
 
-<div class="container torano-hero-banner position-relative overflow-hidden mb-5">
-    <img src="~/images/Banner.png" class="img-fluid w-100" alt="Back In Form Banner" style="object-fit: cover; height: 650px; filter: brightness(90%);">
-    <div class="banner-text-overlay position-absolute end-0 top-50 translate-middle-y me-5 pe-5 text-end text-white" style="z-index: 10;">
-        <h1 class="serif-font text-uppercase fw-bold text-dark m-0" style="font-size: 100px; letter-spacing: -2px; line-height: 0.9;">Back<br>In Form</h1>
-        <p class="serif-font fw-light text-dark fs-5 mt-3 text-uppercase" style="letter-spacing: 2px;">Not just back to work - Back with presence</p>
-    </div>
+<div class="container torano-hero-banner
+            position-relative overflow-hidden mb-5">
+
+    <img src="~/images/Banner.png"
+         class="img-fluid w-100"
+         alt="Back In Form Banner"
+         style="object-fit: cover;
+                height: 650px;
+                filter: brightness(90%);" />
 </div>
 
-<div class="container pb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-        <h3 class="serif-font text-uppercase fw-bold text-dark m-0" style="letter-spacing: 1px;">
-            <i class="bi bi-star-fill text-danger me-2"></i>Sản phẩm nổi bật
-        </h3>
-        <span class="badge bg-light text-secondary border">Tổng số: @Model.Count() sản phẩm</span>
+<div id="product-list"
+     class="container pb-5">
+
+    <div class="d-flex justify-content-between
+                align-items-center mb-4 pb-2 border-bottom">
+
+        <div>
+            <h3 class="serif-font text-uppercase
+                       fw-bold text-dark m-0"
+                style="letter-spacing: 1px;">
+
+                @if (isSearching)
+                {
+                    <i class="bi bi-search text-danger me-2"></i>
+
+                    <span>Kết quả tìm kiếm</span>
+                }
+                else
+                {
+                    <i class="bi bi-star-fill text-danger me-2"></i>
+
+                    <span>Sản phẩm nổi bật</span>
+                }
+            </h3>
+
+            @if (isSearching)
+            {
+                <div class="text-secondary mt-2">
+                    Từ khóa:
+
+                    <strong class="text-dark">
+                        “@searchTerm”
+                    </strong>
+                </div>
+            }
+        </div>
+
+        <span class="badge bg-light
+                     text-secondary border">
+
+            Tổng số: @products.Count sản phẩm
+        </span>
     </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
-        @foreach (var item in Model)
-        {
-            // TÍNH TOÁN GIÁ THẤP NHẤT TỪ DANH SÁCH BIẾN THỂ ĐỂ HIỂN THỊ
-            var minPrice = item.ProductVariants != null && item.ProductVariants.Any()
-                           ? item.ProductVariants.Min(v => v.Price)
-                           : 0;
+    @if (!products.Any())
+    {
+        <div class="text-center py-5
+                    border bg-light shadow-sm">
 
-            <div class="col torano-product-card">
-                <div class="card h-100 shadow-sm border-0 position-relative rounded-0 transition-transform">
-                    <img src="@(string.IsNullOrEmpty(item.Image_Url) ? "https://placehold.co/400x400?text=" + item.Product_Name : item.Image_Url)" class="card-img-top p-0 rounded-0" alt="@item.Product_Name" style="object-fit: cover; aspect-ratio: 1/1;">
+            <i class="bi bi-search text-muted"
+               style="font-size: 3rem;">
+            </i>
 
-                    <div class="card-body d-flex flex-column pt-3 px-3">
-                        <span class="badge bg-light text-secondary mb-2 align-self-start border fs-9 rounded-0 text-uppercase">
-                            @item.Category?.Category_Name
-                        </span>
+            <h5 class="fw-bold text-dark mt-3">
+                Không tìm thấy sản phẩm
+            </h5>
 
-                        <h6 class="card-title fw-bold text-dark text-truncate mb-2 text-uppercase fs-8" title="@item.Product_Name">
-                            @item.Product_Name
-                        </h6>
+            <p class="text-secondary mb-4">
+                Không có sản phẩm nào phù hợp với từ khóa
+                <strong>“@searchTerm”</strong>.
+            </p>
 
-                        <p class="card-text text-danger fw-bold fs-6 mb-2">
-                            @if (minPrice > 0)
+            <a asp-area=""
+               asp-controller="Home"
+               asp-action="Index"
+               class="btn btn-danger
+                      rounded-0 px-4
+                      text-uppercase fw-bold">
+
+                Xem tất cả sản phẩm
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1
+                    row-cols-sm-2
+                    row-cols-lg-4 g-4">
+
+            @foreach (var item in products)
+            {
+                var activeVariants =
+                    item.ProductVariants?
+                        .Where(variant => !variant.IsDeleted)
+                        .ToList()
+                    ?? new List<hoangstore.Models.ProductVariant>();
+
+                var minPrice =
+                    activeVariants.Any()
+                        ? activeVariants.Min(
+                            variant => variant.Price)
+                        : 0;
+
+                <div class="col torano-product-card">
+
+                    <div class="card h-100
+                                shadow-sm border-0
+                                position-relative
+                                rounded-0
+                                transition-transform">
+
+                        <img src="@(
+                            string.IsNullOrWhiteSpace(item.Image_Url)
+                                ? "https://placehold.co/400x400?text=" +
+                                  Uri.EscapeDataString(item.Product_Name)
+                                : item.Image_Url)"
+                             class="card-img-top p-0 rounded-0"
+                             alt="@item.Product_Name"
+                             style="object-fit: cover;
+                                    aspect-ratio: 1/1;" />
+
+                        <div class="card-body d-flex
+                                    flex-column pt-3 px-3">
+
+                            <span class="badge bg-light
+                                         text-secondary mb-2
+                                         align-self-start border
+                                         fs-9 rounded-0
+                                         text-uppercase">
+
+                                @item.Category?.Category_Name
+                            </span>
+
+                            <h6 class="card-title fw-bold
+                                       text-dark text-truncate
+                                       mb-2 text-uppercase fs-8"
+                                title="@item.Product_Name">
+
+                                @item.Product_Name
+                            </h6>
+
+                            <p class="card-text text-danger
+                                      fw-bold fs-6 mb-2">
+
+                                @if (minPrice > 0)
+                                {
+                                    <span>
+                                        Từ @minPrice.ToString("N0") đ
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted
+                                                 small fw-normal">
+
+                                        Chưa cập nhật giá
+                                    </span>
+                                }
+                            </p>
+
+                            @if (activeVariants.Any())
                             {
-                                <span>Từ @string.Format("{0:N0}", minPrice) đ</span>
+                                <div class="mb-3">
+
+                                    <label class="form-label
+                                                  small text-muted mb-1">
+
+                                        Chọn kích cỡ & màu sắc:
+                                    </label>
+
+                                    <select class="form-select
+                                                   form-select-sm
+                                                   rounded-0
+                                                   select-variant"
+                                            style="font-size: 12px;">
+
+                                        @foreach (var variant
+                                            in activeVariants)
+                                        {
+                                            <option value="@variant.Id">
+
+                                                Size: @variant.Size
+                                                - Màu: @variant.Color
+                                                (@variant.Price.ToString("N0") đ)
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
                             }
                             else
                             {
-                                <span class="text-muted small fw-normal">Chưa cập nhật giá</span>
+                                <div class="mb-3">
+
+                                    <span class="badge bg-warning
+                                                 text-dark rounded-0
+                                                 w-100 py-2 fs-9">
+
+                                        Sản phẩm tạm hết hàng
+                                    </span>
+                                </div>
                             }
-                        </p>
 
-                        @if (item.ProductVariants != null && item.ProductVariants.Any())
-                        {
-                            <div class="mb-3">
-                                <label class="form-label small text-muted mb-1">Chọn kích cỡ & màu sắc:</label>
-                                <select class="form-select form-select-sm rounded-0 select-variant" style="font-size: 12px;">
-                                    @foreach (var variant in item.ProductVariants)
-                                    {
-                                        <option value="@variant.Id">
-                                            Size: @variant.Size - Màu: @variant.Color (@string.Format("{0:N0}", variant.Price) đ)
-                                        </option>
-                                    }
-                                </select>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="mb-3">
-                                <span class="badge bg-warning text-dark rounded-0 w-100 py-2 fs-9">Sản phẩm tạm hết hàng</span>
-                            </div>
-                        }
+                            <div class="mt-auto d-grid gap-2">
 
-                        <div class="mt-auto d-grid gap-2">
-                            <button class="btn btn-outline-danger btn-sm fw-bold rounded-0 py-2 fs-8 btn-quick-view" data-id="@item.ProductId" data-action="add-to-cart">
-                                <i class="bi bi-cart-plus me-1"></i> Thêm vào giỏ
-                            </button>
-                            <button class="btn btn-danger btn-sm fw-bold rounded-0 py-2 fs-8 text-uppercase btn-quick-view" data-id="@item.ProductId" data-action="buy-now">
-                                Mua ngay
-                            </button>
+                                <button class="btn
+                                               btn-outline-danger
+                                               btn-sm fw-bold
+                                               rounded-0 py-2 fs-8
+                                               btn-quick-view"
+                                        data-id="@item.ProductId"
+                                        data-action="add-to-cart"
+                                        @(activeVariants.Any()
+                                            ? null
+                                            : "disabled")>
+
+                                    <i class="bi bi-cart-plus me-1"></i>
+
+                                    Thêm vào giỏ
+                                </button>
+
+                                <button class="btn btn-danger
+                                               btn-sm fw-bold
+                                               rounded-0 py-2 fs-8
+                                               text-uppercase
+                                               btn-quick-view"
+                                        data-id="@item.ProductId"
+                                        data-action="buy-now"
+                                        @(activeVariants.Any()
+                                            ? null
+                                            : "disabled")>
+
+                                    Mua ngay
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>
 
-<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+<div class="modal fade"
+     id="quickViewModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog
+                modal-dialog-centered
+                modal-lg">
+
         <div class="modal-content rounded-0">
+
             <div id="quickViewModalBody">
             </div>
         </div>
@@ -98,13 +276,29 @@
 </div>
 
 <style>
+    #product-list {
+        scroll-margin-top: 130px;
+    }
+
     .torano-product-card .card {
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition:
+            transform 0.2s,
+            box-shadow 0.2s;
     }
 
     .torano-product-card:hover .card {
         transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+
+        box-shadow:
+            0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .fs-8 {
+        font-size: 13px !important;
+    }
+
+    .fs-9 {
+        font-size: 11px !important;
     }
 </style>
 
@@ -128,7 +322,10 @@
                 .removeClass('active-variant');
 
             $('#selectedVariantId').val('');
-            $('#quickViewQuantity').val(1).attr('max', 100);
+
+            $('#quickViewQuantity')
+                .val(1)
+                .attr('max', 100);
 
             $('#btnConfirmAddToCart')
                 .prop('disabled', true);
@@ -138,8 +335,11 @@
                 'Vui lòng chọn size và màu'
             );
 
-            $('#confirmButtonText').removeClass('d-none');
-            $('#confirmButtonLoading').addClass('d-none');
+            $('#confirmButtonText')
+                .removeClass('d-none');
+
+            $('#confirmButtonLoading')
+                .addClass('d-none');
 
             resetVariantDisplay();
         }
@@ -151,11 +351,15 @@
                 return;
             }
 
-            const defaultImage = root.data('default-image');
-            const minPrice = Number(root.data('min-price')) || 0;
+            const defaultImage =
+                root.data('default-image');
+
+            const minPrice =
+                Number(root.data('min-price')) || 0;
 
             if (defaultImage) {
-                $('#quickViewImage').attr('src', defaultImage);
+                $('#quickViewImage')
+                    .attr('src', defaultImage);
             }
 
             if (minPrice > 0) {
@@ -199,10 +403,11 @@
                     ? window.productVariants
                     : [];
 
-            const matchedVariant = variants.find(function (variant) {
-                return variant.size === selectedSize &&
-                       variant.color === selectedColor;
-            });
+            const matchedVariant =
+                variants.find(function (variant) {
+                    return variant.size === selectedSize &&
+                           variant.color === selectedColor;
+                });
 
             if (!matchedVariant) {
                 $('#variantStockInfo').html(
@@ -240,11 +445,15 @@
                 return;
             }
 
-            $('#selectedVariantId').val(matchedVariant.id);
+            $('#selectedVariantId')
+                .val(matchedVariant.id);
 
             $('#quickViewQuantity')
                 .val(1)
-                .attr('max', matchedVariant.quantity);
+                .attr(
+                    'max',
+                    matchedVariant.quantity
+                );
 
             $('#variantStockInfo').html(
                 '<i class="bi bi-check-circle text-success me-1"></i>' +
@@ -257,249 +466,314 @@
                 .prop('disabled', false);
         }
 
-        // Mở modal chọn biến thể.
-        $(document).on('click', '.btn-quick-view', function () {
-            const productId = $(this).data('id');
-            const action = $(this).data('action');
+        $(document).on(
+            'click',
+            '.btn-quick-view',
+            function () {
+                const productId =
+                    $(this).data('id');
 
-            $.ajax({
-                url: '/Home/GetQuickView/' + productId,
-                type: 'GET',
+                const action =
+                    $(this).data('action');
 
-                success: function (response) {
-                    $('#quickViewModalBody').html(response);
+                $.ajax({
+                    url:
+                        '/Home/GetQuickView/' +
+                        productId,
 
-                    selectedSize = null;
-                    selectedColor = null;
-                    quickViewSubmitting = false;
+                    type: 'GET',
 
-                    $('#currentAction').val(action);
+                    success: function (response) {
+                        $('#quickViewModalBody')
+                            .html(response);
 
-                    $('#quickViewModal').modal('show');
-                },
+                        selectedSize = null;
+                        selectedColor = null;
+                        quickViewSubmitting = false;
 
-                error: function () {
-                    Swal.fire(
-                        'Lỗi hệ thống',
-                        'Không thể kết nối đến máy chủ lúc này!',
-                        'error'
-                    );
-                }
-            });
-        });
+                        $('#currentAction')
+                            .val(action);
 
-        // Chọn hoặc bỏ chọn size.
-        $(document).on('click', '.btn-select-size', function () {
-            const button = $(this);
-            const clickedSize = button.data('size');
+                        $('#quickViewModal')
+                            .modal('show');
+                    },
 
-            // Bấm lại đúng size đang chọn thì bỏ chọn.
-            if (selectedSize === clickedSize) {
-                selectedSize = null;
-                button.removeClass('active-variant');
-            }
-            else {
-                $('.btn-select-size')
-                    .removeClass('active-variant');
-
-                button.addClass('active-variant');
-                selectedSize = clickedSize;
-            }
-
-            checkMatchingVariant();
-        });
-
-        // Chọn hoặc bỏ chọn màu.
-        $(document).on('click', '.btn-select-color', function () {
-            const button = $(this);
-            const clickedColor = button.data('color');
-
-            // Bấm lại đúng màu đang chọn thì bỏ chọn.
-            if (selectedColor === clickedColor) {
-                selectedColor = null;
-                button.removeClass('active-variant');
-            }
-            else {
-                $('.btn-select-color')
-                    .removeClass('active-variant');
-
-                button.addClass('active-variant');
-                selectedColor = clickedColor;
-            }
-
-            checkMatchingVariant();
-        });
-
-        // Kiểm tra số lượng khách nhập.
-        $(document).on('input change', '#quickViewQuantity', function () {
-            const quantityInput = $(this);
-
-            let quantity =
-                parseInt(quantityInput.val(), 10);
-
-            const maxQuantity =
-                parseInt(quantityInput.attr('max'), 10) || 100;
-
-            if (Number.isNaN(quantity) || quantity < 1) {
-                quantity = 1;
-            }
-
-            if (quantity > maxQuantity) {
-                quantity = maxQuantity;
-
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Không đủ tồn kho',
-                    text:
-                        'Sản phẩm hiện chỉ còn ' +
-                        maxQuantity +
-                        ' sản phẩm.',
-                    timer: 1600,
-                    showConfirmButton: false
+                    error: function () {
+                        Swal.fire(
+                            'Lỗi hệ thống',
+                            'Không thể kết nối đến máy chủ lúc này!',
+                            'error'
+                        );
+                    }
                 });
             }
+        );
 
-            quantityInput.val(quantity);
-        });
+        $(document).on(
+            'click',
+            '.btn-select-size',
+            function () {
+                const button = $(this);
 
-        // Thêm sản phẩm vào giỏ.
-        $(document).on('click', '#btnConfirmAddToCart', function () {
-            if (quickViewSubmitting) {
-                return;
-            }
+                const clickedSize =
+                    button.data('size');
 
-            const variantId =
-                $('#selectedVariantId').val();
+                if (selectedSize === clickedSize) {
+                    selectedSize = null;
 
-            if (!variantId) {
-                Swal.fire(
-                    'Thông báo',
-                    'Vui lòng chọn đầy đủ size và màu sắc.',
-                    'warning'
-                );
-
-                return;
-            }
-
-            const quantity =
-                parseInt($('#quickViewQuantity').val(), 10);
-
-            if (Number.isNaN(quantity) || quantity < 1) {
-                Swal.fire(
-                    'Thông báo',
-                    'Số lượng sản phẩm không hợp lệ.',
-                    'warning'
-                );
-
-                return;
-            }
-
-            quickViewSubmitting = true;
-
-            $('#btnConfirmAddToCart')
-                .prop('disabled', true);
-
-            $('#confirmButtonText')
-                .addClass('d-none');
-
-            $('#confirmButtonLoading')
-                .removeClass('d-none');
-
-            const formData =
-                $('#frmQuickAddToCart').serialize();
-
-            const actionType =
-                $('#currentAction').val();
-
-            $.ajax({
-                url: '/Cart/AddToCart',
-                type: 'POST',
-                data: formData,
-
-                success: function (response) {
-                    if (response.success) {
-                        $('.badge-count').text(
-                            response.newCount
+                    button.removeClass(
+                        'active-variant'
+                    );
+                }
+                else {
+                    $('.btn-select-size')
+                        .removeClass(
+                            'active-variant'
                         );
 
-                        $('#quickViewModal').modal('hide');
+                    button.addClass(
+                        'active-variant'
+                    );
 
-                        if (actionType === 'buy-now') {
+                    selectedSize = clickedSize;
+                }
+
+                checkMatchingVariant();
+            }
+        );
+
+        $(document).on(
+            'click',
+            '.btn-select-color',
+            function () {
+                const button = $(this);
+
+                const clickedColor =
+                    button.data('color');
+
+                if (selectedColor === clickedColor) {
+                    selectedColor = null;
+
+                    button.removeClass(
+                        'active-variant'
+                    );
+                }
+                else {
+                    $('.btn-select-color')
+                        .removeClass(
+                            'active-variant'
+                        );
+
+                    button.addClass(
+                        'active-variant'
+                    );
+
+                    selectedColor = clickedColor;
+                }
+
+                checkMatchingVariant();
+            }
+        );
+
+        $(document).on(
+            'input change',
+            '#quickViewQuantity',
+            function () {
+                const quantityInput = $(this);
+
+                let quantity =
+                    parseInt(
+                        quantityInput.val(),
+                        10
+                    );
+
+                const maxQuantity =
+                    parseInt(
+                        quantityInput.attr('max'),
+                        10
+                    ) || 100;
+
+                if (Number.isNaN(quantity) ||
+                    quantity < 1) {
+                    quantity = 1;
+                }
+
+                if (quantity > maxQuantity) {
+                    quantity = maxQuantity;
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Không đủ tồn kho',
+
+                        text:
+                            'Sản phẩm hiện chỉ còn ' +
+                            maxQuantity +
+                            ' sản phẩm.',
+
+                        timer: 1600,
+                        showConfirmButton: false
+                    });
+                }
+
+                quantityInput.val(quantity);
+            }
+        );
+
+        $(document).on(
+            'click',
+            '#btnConfirmAddToCart',
+            function () {
+                if (quickViewSubmitting) {
+                    return;
+                }
+
+                const variantId =
+                    $('#selectedVariantId').val();
+
+                if (!variantId) {
+                    Swal.fire(
+                        'Thông báo',
+                        'Vui lòng chọn đầy đủ size và màu sắc.',
+                        'warning'
+                    );
+
+                    return;
+                }
+
+                const quantity =
+                    parseInt(
+                        $('#quickViewQuantity').val(),
+                        10
+                    );
+
+                if (Number.isNaN(quantity) ||
+                    quantity < 1) {
+                    Swal.fire(
+                        'Thông báo',
+                        'Số lượng sản phẩm không hợp lệ.',
+                        'warning'
+                    );
+
+                    return;
+                }
+
+                quickViewSubmitting = true;
+
+                $('#btnConfirmAddToCart')
+                    .prop('disabled', true);
+
+                $('#confirmButtonText')
+                    .addClass('d-none');
+
+                $('#confirmButtonLoading')
+                    .removeClass('d-none');
+
+                const formData =
+                    $('#frmQuickAddToCart')
+                        .serialize();
+
+                const actionType =
+                    $('#currentAction').val();
+
+                $.ajax({
+                    url: '/Cart/AddToCart',
+                    type: 'POST',
+                    data: formData,
+
+                    success: function (response) {
+                        if (response.success) {
+                            $('.badge-count').text(
+                                response.newCount
+                            );
+
+                            $('#quickViewModal')
+                                .modal('hide');
+
+                            if (actionType === 'buy-now') {
+                                window.location.href =
+                                    '/Cart/Index?buyNowId=' +
+                                    encodeURIComponent(
+                                        response.cartItemId
+                                    );
+
+                                return;
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công',
+
+                                text:
+                                    response.message ||
+                                    'Đã thêm vào giỏ hàng!',
+
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                            return;
+                        }
+
+                        quickViewSubmitting = false;
+
+                        $('#btnConfirmAddToCart')
+                            .prop('disabled', false);
+
+                        $('#confirmButtonText')
+                            .removeClass('d-none');
+
+                        $('#confirmButtonLoading')
+                            .addClass('d-none');
+
+                        if (response.redirectToLogin) {
                             window.location.href =
-                                '/Cart/Index?buyNowId=' +
+                                '/Identity/Account/Login' +
+                                '?ReturnUrl=' +
                                 encodeURIComponent(
-                                    response.cartItemId
+                                    window.location.pathname
                                 );
 
                             return;
                         }
 
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Thành công',
-                            text:
-                                response.message ||
-                                'Đã thêm vào giỏ hàng!',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
+                        Swal.fire(
+                            'Thông báo',
+                            response.message ||
+                            'Có lỗi xảy ra!',
+                            'warning'
+                        );
+                    },
 
-                        return;
+                    error: function () {
+                        quickViewSubmitting = false;
+
+                        $('#btnConfirmAddToCart')
+                            .prop('disabled', false);
+
+                        $('#confirmButtonText')
+                            .removeClass('d-none');
+
+                        $('#confirmButtonLoading')
+                            .addClass('d-none');
+
+                        Swal.fire(
+                            'Lỗi hệ thống',
+                            'Không thể thêm sản phẩm vào giỏ hàng.',
+                            'error'
+                        );
                     }
+                });
+            }
+        );
 
-                    quickViewSubmitting = false;
+        $('#quickViewModal').on(
+            'hidden.bs.modal',
+            function () {
+                resetQuickViewState();
 
-                    $('#btnConfirmAddToCart')
-                        .prop('disabled', false);
-
-                    $('#confirmButtonText')
-                        .removeClass('d-none');
-
-                    $('#confirmButtonLoading')
-                        .addClass('d-none');
-
-                    if (response.redirectToLogin) {
-                        window.location.href =
-                            '/Identity/Account/Login?ReturnUrl=' +
-                            encodeURIComponent(
-                                window.location.pathname
-                            );
-
-                        return;
-                    }
-
-                    Swal.fire(
-                        'Thông báo',
-                        response.message || 'Có lỗi xảy ra!',
-                        'warning'
-                    );
-                },
-
-                error: function () {
-                    quickViewSubmitting = false;
-
-                    $('#btnConfirmAddToCart')
-                        .prop('disabled', false);
-
-                    $('#confirmButtonText')
-                        .removeClass('d-none');
-
-                    $('#confirmButtonLoading')
-                        .addClass('d-none');
-
-                    Swal.fire(
-                        'Lỗi hệ thống',
-                        'Không thể thêm sản phẩm vào giỏ hàng.',
-                        'error'
-                    );
-                }
-            });
-        });
-
-        // Reset trạng thái sau khi đóng modal.
-        $('#quickViewModal').on('hidden.bs.modal', function () {
-            resetQuickViewState();
-            $('#quickViewModalBody').empty();
-        });
+                $('#quickViewModalBody')
+                    .empty();
+            }
+        );
     </script>
 }
