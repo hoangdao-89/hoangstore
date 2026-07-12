@@ -1,103 +1,228 @@
 ﻿@model hoangstore.Models.Product
 
 @{
-    var availableSizes = Model.ProductVariants.Select(p => p.Size).Distinct().OrderBy(s => s).ToList();
-    var availableColors = Model.ProductVariants.Select(p => p.Color).Distinct().OrderBy(s => s).ToList();
+    var activeVariants = Model.ProductVariants
+        .Where(v => !v.IsDeleted)
+        .ToList();
 
-    // TÍNH TOÁN GIÁ THẤP NHẤT ĐỂ HIỂN THỊ ĐẠI DIỆN LÚC BAN ĐẦU
-    var minPrice = Model.ProductVariants != null && Model.ProductVariants.Any()
-                   ? Model.ProductVariants.Min(v => v.Price)
-                   : 0;
+    var availableSizes = activeVariants
+        .Select(v => v.Size)
+        .Distinct()
+        .OrderBy(size => size)
+        .ToList();
+
+    var availableColors = activeVariants
+        .Select(v => v.Color)
+        .Distinct()
+        .OrderBy(color => color)
+        .ToList();
+
+    var minPrice = activeVariants.Any()
+        ? activeVariants.Min(v => v.Price)
+        : 0;
 }
 
-<div class="modal-header border-0 pb-0">
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-</div>
+<div id="quickViewRoot"
+     data-default-image="@Model.Image_Url"
+     data-min-price="@minPrice">
 
-<div class="modal-body pt-0">
-    <div class="row">
-        <div class="col-md-5 mb-3 mb-md-0">
-            <img src="@Model.Image_Url" id="quickViewImage" class="img-fluid w-100 object-fit-cover shadow-sm" style="height: 400px; border: 1px solid #eee;" alt="@Model.Product_Name" />
-        </div>
+    <div class="modal-header border-0 pb-0">
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Đóng">
+        </button>
+    </div>
 
-        <div class="col-md-7 d-flex flex-column justify-content-between">
-            <div>
-                <span class="text-muted text-uppercase small tracking-wider">Hoàng Store / @(Model.Category?.Category_Name ?? "Local Brand")</span>
-                <h3 class="fw-bold text-uppercase mt-1 mb-2" style="letter-spacing: -0.5px;">@Model.Product_Name</h3>
+    <div class="modal-body pt-0">
+        <div class="row">
 
-                <h4 class="text-danger fw-bold mb-3" id="quickViewPrice">
-                    @if (minPrice > 0)
-                    {
-                        <span>Từ @minPrice.ToString("#,##0") đ</span>
-                    }
-                    else
-                    {
-                        <span class="text-muted fs-6 fw-normal">Chưa cập nhật giá</span>
-                    }
-                </h4>
-
-                <hr class="my-3" style="border-top: 1px dashed #ddd;" />
-
-                <p class="text-muted small mb-4" style="line-height: 1.6;">@Model.Product_Description</p>
-
-                <form id="frmQuickAddToCart">
-                    <input type="hidden" name="ProductId" value="@Model.ProductId" />
-                    <input type="hidden" id="selectedVariantId" name="variantId" value="" />
-                    <input type="hidden" id="currentAction" name="" value="" />
-
-                    <div class="mb-3">
-                        <label class="fw-bold small d-block mb-2 text-uppercase text-secondary" style="font-size: 11px;">Kích cỡ:</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach (var size in availableSizes)
-                            {
-                                <button type="button" class="btn btn-outline-dark rounded-0 px-3 py-1 btn-select-size" data-size="@size" style="font-weight: 600; font-size: 13px;">
-                                    @size
-                                </button>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="fw-bold small d-block mb-2 text-uppercase text-secondary" style="font-size: 11px;">Màu sắc:</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach (var color in availableColors)
-                            {
-                                <button type="button" class="btn btn-outline-dark rounded-0 px-3 py-1 btn-select-color" data-color="@color" style="font-weight: 600; font-size: 13px;">
-                                    @color
-                                </button>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="mb-4 d-flex align-items-center gap-3">
-                        <label class="fw-bold small m-0 text-uppercase text-secondary" style="font-size: 11px;">Số lượng:</label>
-                        <div class="input-group input-group-sm" style="width: 110px;">
-                            <input type="number" name="Quantity" class="form-control rounded-0 text-center fw-bold" value="1" min="1" max="100" />
-                        </div>
-                        <span class="text-muted small fw-medium" id="variantStockInfo" style="font-size: 12px;">
-                            <i class="bi bi-info-circle me-1"></i> Vui lòng chọn size và màu
-                        </span>
-                    </div>
-                </form>
+            <div class="col-md-5 mb-3 mb-md-0">
+                <img src="@Model.Image_Url"
+                     id="quickViewImage"
+                     class="img-fluid w-100 object-fit-cover shadow-sm"
+                     style="height: 400px; border: 1px solid #eee;"
+                     alt="@Model.Product_Name" />
             </div>
 
-            <div class="d-grid mt-3">
-                <button type="button" id="btnConfirmAddToCart" class="btn btn-dark rounded-0 py-25 fw-bold text-uppercase border-dark" style="letter-spacing: 1px; font-size: 14px;" disabled>
-                    <i class="bi bi-check-circle-fill me-2"></i> Xác nhận lựa chọn
-                </button>
+            <div class="col-md-7 d-flex flex-column justify-content-between">
+                <div>
+                    <span class="text-muted text-uppercase small tracking-wider">
+                        Hoàng Store /
+                        @(Model.Category?.Category_Name ?? "Local Brand")
+                    </span>
+
+                    <h3 class="fw-bold text-uppercase mt-1 mb-2"
+                        style="letter-spacing: -0.5px;">
+                        @Model.Product_Name
+                    </h3>
+
+                    <h4 class="text-danger fw-bold mb-3"
+                        id="quickViewPrice">
+
+                        @if (minPrice > 0)
+                        {
+                            <span>
+                                Từ @minPrice.ToString("#,##0") đ
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-muted fs-6 fw-normal">
+                                Chưa cập nhật giá
+                            </span>
+                        }
+                    </h4>
+
+                    <hr class="my-3"
+                        style="border-top: 1px dashed #ddd;" />
+
+                    <p class="text-muted small mb-4"
+                       style="line-height: 1.6;">
+                        @Model.Product_Description
+                    </p>
+
+                    <form id="frmQuickAddToCart">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="ProductId"
+                               value="@Model.ProductId" />
+
+                        <input type="hidden"
+                               id="selectedVariantId"
+                               name="variantId"
+                               value="" />
+
+                        <input type="hidden"
+                               id="currentAction"
+                               value="" />
+
+                        <div class="mb-3">
+                            <label class="fw-bold small d-block mb-2
+                                text-uppercase text-secondary"
+                                   style="font-size: 11px;">
+                                Kích cỡ:
+                            </label>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var size in availableSizes)
+                                {
+                                    <button type="button"
+                                            class="btn btn-outline-dark rounded-0
+                                        px-3 py-1 btn-select-size"
+                                            data-size="@size"
+                                            style="font-weight: 600;
+                                        font-size: 13px;">
+                                        @size
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="fw-bold small d-block mb-2
+                                text-uppercase text-secondary"
+                                   style="font-size: 11px;">
+                                Màu sắc:
+                            </label>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var color in availableColors)
+                                {
+                                    <button type="button"
+                                            class="btn btn-outline-dark rounded-0
+                                        px-3 py-1 btn-select-color"
+                                            data-color="@color"
+                                            style="font-weight: 600;
+                                        font-size: 13px;">
+                                        @color
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-4 d-flex align-items-center gap-3">
+                            <label class="fw-bold small m-0
+                                text-uppercase text-secondary"
+                                   style="font-size: 11px;">
+                                Số lượng:
+                            </label>
+
+                            <div class="input-group input-group-sm"
+                                 style="width: 110px;">
+
+                                <input type="number"
+                                       id="quickViewQuantity"
+                                       name="quantity"
+                                       class="form-control rounded-0
+                                text-center fw-bold"
+                                       value="1"
+                                       min="1"
+                                       max="100" />
+                            </div>
+
+                            <span class="text-muted small fw-medium"
+                                  id="variantStockInfo"
+                                  style="font-size: 12px;">
+
+                                <i class="bi bi-info-circle me-1"></i>
+                                Vui lòng chọn size và màu
+                            </span>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="d-grid mt-3">
+                    <button type="button"
+                            id="btnConfirmAddToCart"
+                            class="btn btn-dark rounded-0 py-2
+                        fw-bold text-uppercase border-dark"
+                            style="letter-spacing: 1px;
+                        font-size: 14px;"
+                            disabled>
+
+                        <span id="confirmButtonText">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            Xác nhận lựa chọn
+                        </span>
+
+                        <span id="confirmButtonLoading"
+                              class="d-none">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Đang xử lý...
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+    .active-variant {
+        background-color: #212529 !important;
+        color: white !important;
+        border-color: #212529 !important;
+    }
+
+    .variant-disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        text-decoration: line-through;
+    }
+</style>
+
 <script>
-    var productVariants = @Html.Raw(Json.Serialize(Model.ProductVariants.Select(v => new
-    {
-            id = v.Id,
-            size = v.Size,
-            color = v.Color,
-            quantity = v.Quantity,
-            price = v.Price,
-            variant_Image_Url = v.Variant_Image_Url
-    })));
+    window.productVariants = @Html.Raw(Json.Serialize(
+                activeVariants.Select(v => new
+                {
+                        id = v.Id,
+                        size = v.Size,
+                        color = v.Color,
+                        quantity = v.Quantity,
+                        price = v.Price,
+                        variantImageUrl = v.Variant_Image_Url
+                })
+        ));
 </script>
