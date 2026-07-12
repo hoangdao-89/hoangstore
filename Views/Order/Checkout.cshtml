@@ -7,96 +7,251 @@
 <div class="container py-5">
     <div class="mb-4 pb-2 border-bottom">
         <h3 class="serif-font text-uppercase fw-bold text-dark m-0">
-            <i class="bi bi-credit-card-2-front-fill text-danger me-2"></i>Thanh toán đơn hàng
+            <i class="bi bi-credit-card-2-front-fill text-danger me-2"></i>
+            Thanh toán đơn hàng
         </h3>
     </div>
 
-    <form asp-action="ProcessCheckout" asp-controller="Order" method="post">
+    <form asp-action="ProcessCheckout"
+          asp-controller="Order"
+          method="post"
+          id="checkout-form">
+
         @Html.AntiForgeryToken()
-        <input type="hidden" name="cartItemIdsString" value="@Model.SelectedCartItemIds" />
+
+        <input type="hidden"
+               name="cartItemIdsString"
+               value="@Model.SelectedCartItemIds" />
 
         <div class="row g-5">
-            <!-- Cột trái: Thông tin -->
-            <div class="col-lg-7">
-                <h5 class="fw-bold text-uppercase mb-4 text-secondary" style="font-size: 14px; letter-spacing: 1px;">Thông tin giao hàng</h5>
 
-                @if (TempData["ErrorMessage"] != null)
+            <!-- Cột trái: Thông tin giao hàng -->
+            <div class="col-lg-7">
+
+                <h5 class="fw-bold text-uppercase mb-4 text-secondary section-title">
+                    Thông tin giao hàng
+                </h5>
+
+                @if (TempData["CheckoutErrorMessage"] is string errorMessage)
                 {
-                    <div class="alert alert-danger rounded-0 fs-8">@TempData["ErrorMessage"]</div>
+                    <div class="alert alert-danger rounded-0 fs-8"
+                         role="alert">
+                        @errorMessage
+                    </div>
                 }
 
                 <div class="mb-3">
-                    <label class="form-label small fw-bold text-dark">Họ và tên người nhận</label>
-                    <input type="text" name="ReceiverName" class="form-control rounded-0" value="@ViewBag.ReceiverName" required placeholder="Nhập tên người nhận" />
+                    <label for="receiver-name"
+                           class="form-label small fw-bold text-dark">
+                        Họ và tên người nhận
+                    </label>
+
+                    <input type="text"
+                           id="receiver-name"
+                           name="ReceiverName"
+                           class="form-control rounded-0"
+                           value="@ViewBag.ReceiverName"
+                           maxlength="100"
+                           required
+                           autocomplete="name"
+                           placeholder="Nhập tên người nhận" />
+
+                    <div class="invalid-feedback">
+                        Vui lòng nhập họ và tên người nhận.
+                    </div>
                 </div>
+
                 <div class="mb-3">
-                    <label class="form-label small fw-bold text-dark">Số điện thoại</label>
-                    <input type="tel" name="ReceiverPhone" class="form-control rounded-0" value="@ViewBag.ReceiverPhone" required placeholder="Nhập số điện thoại" />
+                    <label for="receiver-phone"
+                           class="form-label small fw-bold text-dark">
+                        Số điện thoại
+                    </label>
+
+                    <input type="tel"
+                           id="receiver-phone"
+                           name="ReceiverPhone"
+                           class="form-control rounded-0"
+                           value="@ViewBag.ReceiverPhone"
+                           maxlength="20"
+                           required
+                           autocomplete="tel"
+                           placeholder="Nhập số điện thoại" />
+
+                    <div class="invalid-feedback">
+                        Vui lòng nhập số điện thoại người nhận.
+                    </div>
                 </div>
+
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-dark">Địa chỉ nhận hàng</label>
-                    <textarea name="ShippingAddress" class="form-control rounded-0" rows="3" required>@ViewBag.ShippingAddress</textarea>
+                    <label for="shipping-address"
+                           class="form-label small fw-bold text-dark">
+                        Địa chỉ nhận hàng
+                    </label>
+
+                    <textarea id="shipping-address"
+                              name="ShippingAddress"
+                              class="form-control rounded-0"
+                              rows="3"
+                              maxlength="500"
+                              required
+                              autocomplete="street-address"
+                              placeholder="Nhập địa chỉ nhận hàng">@ViewBag.ShippingAddress</textarea>
+
+                    <div class="invalid-feedback">
+                        Vui lòng nhập địa chỉ nhận hàng.
+                    </div>
                 </div>
 
                 <!-- Phương thức thanh toán -->
-                <h5 class="fw-bold text-uppercase mt-5 mb-4 text-secondary" style="font-size: 14px; letter-spacing: 1px;">Phương thức thanh toán</h5>
+                <h5 class="fw-bold text-uppercase mt-5 mb-4 text-secondary section-title">
+                    Phương thức thanh toán
+                </h5>
 
-                <div class="card rounded-0 border mb-3">
+                <div class="card rounded-0 border mb-3 payment-option">
                     <div class="card-body p-3">
                         <div class="form-check m-0 d-flex align-items-center">
-                            <input class="form-check-input" type="radio" name="PaymentMethod" id="pay-cod" value="COD" checked>
-                            <label class="form-check-label fw-medium text-dark ms-3 cursor-pointer" for="pay-cod">
-                                <i class="bi bi-truck me-2 text-secondary"></i> Thanh toán khi nhận hàng (COD)
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="PaymentMethod"
+                                   id="pay-cod"
+                                   value="COD"
+                                   checked />
+
+                            <label class="form-check-label fw-medium text-dark ms-3 cursor-pointer"
+                                   for="pay-cod">
+                                <i class="bi bi-truck me-2 text-secondary"></i>
+                                Thanh toán khi nhận hàng (COD)
                             </label>
+
                         </div>
                     </div>
                 </div>
 
-                <div class="card rounded-0 border">
+                <div class="card rounded-0 border payment-option">
                     <div class="card-body p-3">
                         <div class="form-check m-0 d-flex align-items-center">
-                            <input class="form-check-input" type="radio" name="PaymentMethod" id="pay-vnpay" value="VNPAY">
-                            <label class="form-check-label fw-medium text-dark ms-3 cursor-pointer" for="pay-vnpay">
-                                <i class="bi bi-qr-code-scan me-2 text-danger"></i> Thanh toán qua VNPAY
-                                <span class="badge bg-light text-dark ms-2" style="font-size: 10px;">QR / ATM / VISA</span>
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="PaymentMethod"
+                                   id="pay-vnpay"
+                                   value="VNPAY" />
+
+                            <label class="form-check-label fw-medium text-dark ms-3 cursor-pointer"
+                                   for="pay-vnpay">
+                                <i class="bi bi-qr-code-scan me-2 text-danger"></i>
+                                Thanh toán qua VNPAY
+
+                                <span class="badge bg-light text-dark ms-2 payment-badge">
+                                    QR / ATM / VISA
+                                </span>
                             </label>
+
                         </div>
-                        
-                        
                     </div>
                 </div>
             </div>
 
             <!-- Cột phải: Tóm tắt đơn hàng -->
             <div class="col-lg-5">
+
                 <div class="card rounded-0 border-0 bg-light p-4 shadow-sm">
-                    <h5 class="fw-bold text-uppercase mb-4 border-bottom pb-2 text-dark fs-7">Tóm tắt đơn hàng</h5>
-                    <div class="checkout-items-list mb-4" style="max-height: 320px; overflow-y: auto;">
+
+                    <h5 class="fw-bold text-uppercase mb-4 border-bottom pb-2 text-dark fs-7">
+                        Tóm tắt đơn hàng
+                    </h5>
+
+                    <div class="checkout-items-list mb-4">
+
                         @foreach (var item in Model.SelectedItems)
                         {
-                            <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-white">
+                            var variant = item.ProductVariant;
+                            var product = variant?.Product;
+
+                            var imageUrl =
+                                variant?.Variant_Image_Url
+                                ?? product?.Image_Url
+                                ?? "/images/no-image.png";
+
+                            var productName =
+                                product?.Product_Name
+                                ?? "Sản phẩm không xác định";
+
+                            var price = variant?.Price ?? 0;
+                            var subtotal = price * item.Quantity;
+
+                            <div class="d-flex align-items-center justify-content-between
+                                mb-3 pb-3 border-bottom border-white">
+
                                 <div class="d-flex align-items-center gap-3">
-                                    <img src="@(item.ProductVariant?.Variant_Image_Url ?? item.ProductVariant?.Product?.Image_Url)" class="border bg-white" style="width: 50px; height: 50px; object-fit: cover;">
+
+                                    <img src="@imageUrl"
+                                         alt="@productName"
+                                         class="checkout-product-image border bg-white" />
+
                                     <div>
-                                        <h6 class="mb-1 text-dark fw-bold fs-8 text-uppercase">@item.ProductVariant?.Product?.Product_Name</h6>
-                                        <span class="text-secondary fs-9">SL: @item.Quantity x @string.Format("{0:N0}", item.ProductVariant?.Price) đ</span>
+                                        <h6 class="mb-1 text-dark fw-bold fs-8 text-uppercase">
+                                            @productName
+                                        </h6>
+
+                                        <span class="text-secondary fs-9">
+                                            SL: @item.Quantity ×
+                                            @price.ToString("N0") đ
+                                        </span>
+
+                                        @if (variant != null)
+                                        {
+                                            <div class="text-secondary fs-9 mt-1">
+                                                Size: @variant.Size |
+                                                Màu: @variant.Color
+                                            </div>
+                                        }
                                     </div>
                                 </div>
-                                <span class="fw-bold text-danger fs-8">@string.Format("{0:N0}", (item.ProductVariant?.Price ?? 0) * item.Quantity) đ</span>
+
+                                <span class="fw-bold text-danger fs-8 text-nowrap ms-2">
+                                    @subtotal.ToString("N0") đ
+                                </span>
                             </div>
                         }
+
                     </div>
 
-                    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary mb-4">
-                        <span class="fw-bold text-dark fs-6">Tổng cộng:</span>
-                        <span class="fw-bold text-danger fs-4">@string.Format("{0:N0}", Model.TotalOrderPrice) đ</span>
+                    <div class="d-flex align-items-center justify-content-between
+                        pt-2 border-top border-secondary mb-4">
+
+                        <span class="fw-bold text-dark fs-6">
+                            Tổng cộng:
+                        </span>
+
+                        <span class="fw-bold text-danger fs-4">
+                            @Model.TotalOrderPrice.ToString("N0") đ
+                        </span>
                     </div>
 
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-danger rounded-0 py-3 fw-bold text-uppercase shadow-sm fs-7">
-                            Xác nhận đặt hàng
+                        <button type="submit"
+                                id="submit-order-button"
+                                class="btn btn-danger rounded-0 py-3
+                            fw-bold text-uppercase shadow-sm fs-7">
+
+                            <span id="submit-button-text">
+                                Xác nhận đặt hàng
+                            </span>
+
+                            <span id="submit-button-loading"
+                                  class="d-none">
+                                <span class="spinner-border spinner-border-sm me-2"
+                                      aria-hidden="true"></span>
+                                Đang xử lý...
+                            </span>
                         </button>
                     </div>
+
+                    <p class="text-secondary fs-9 text-center mt-3 mb-0">
+                        Vui lòng không đóng trang trong khi đơn hàng đang được xử lý.
+                    </p>
                 </div>
             </div>
         </div>
@@ -108,6 +263,10 @@
         cursor: pointer;
     }
 
+    .fs-7 {
+        font-size: 14px !important;
+    }
+
     .fs-8 {
         font-size: 13px !important;
     }
@@ -116,7 +275,70 @@
         font-size: 11px !important;
     }
 
-    .fs-7 {
-        font-size: 14px !important;
+    .section-title {
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .payment-badge {
+        font-size: 10px;
+    }
+
+    .checkout-items-list {
+        max-height: 320px;
+        overflow-y: auto;
+    }
+
+    .checkout-product-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .payment-option:has(input:checked) {
+        border-color: var(--bs-danger) !important;
+        background-color: rgba(220, 53, 69, 0.03);
+    }
+
+    #submit-order-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.75;
     }
 </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const checkoutForm =
+            document.getElementById("checkout-form");
+
+        const submitButton =
+            document.getElementById("submit-order-button");
+
+        const buttonText =
+            document.getElementById("submit-button-text");
+
+        const buttonLoading =
+            document.getElementById("submit-button-loading");
+
+        if (!checkoutForm || !submitButton) {
+            return;
+        }
+
+        checkoutForm.addEventListener("submit", function (event) {
+            if (!checkoutForm.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                checkoutForm.classList.add("was-validated");
+                return;
+            }
+
+            
+            submitButton.disabled = true;
+
+            buttonText?.classList.add("d-none");
+            buttonLoading?.classList.remove("d-none");
+        });
+    });
+</script>
