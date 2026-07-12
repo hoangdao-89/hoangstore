@@ -20,6 +20,8 @@ builder.Services.AddControllersWithViews();
 //Kich hoat bo doc HTTP context de tu dong lay thong tin admin dang thao tac
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IVnPayService, VnPayService>();
+builder.Services.AddHostedService<
+    PendingVnPayOrderCleanupService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,7 +34,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

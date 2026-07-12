@@ -1,22 +1,34 @@
 ﻿using System;
 
-namespace hoangstore.Models.VNPay // Thêm chữ .VNPay vào đây cho đúng folder
+namespace hoangstore.Models.VNPay 
 {
     public class VnPaymentRequest
     {
         public int OrderId { get; set; }
-        public double Amount { get; set; }
-        public string OrderDescription { get; set; }
-        public string BankCode { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string OrderDescription { get; set; } = string.Empty;
+
+        public string BankCode { get; set; } = string.Empty;
     }
 
     public class VnPaymentResponse
     {
         public bool Success { get; set; }
-        public string PaymentMethod { get; set; }
-        public string OrderDescription { get; set; }
-        public string OrderId { get; set; }
-        public string TransactionId { get; set; }
-        public string VnPayResponseCode { get; set; }
+
+        public string PaymentMethod { get; set; } = string.Empty;
+
+        public string OrderDescription { get; set; } = string.Empty;
+
+        public string OrderId { get; set; } = string.Empty;
+
+        public string TransactionId { get; set; } = string.Empty;
+
+        public string VnPayResponseCode { get; set; } = string.Empty;
+
+        public string TransactionStatus { get; set; } = string.Empty;
+
+        public decimal Amount { get; set; }
     }
 }

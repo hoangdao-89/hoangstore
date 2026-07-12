@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using hoangstore.Models.VNPay; // Gọi đúng đến folder VNPay mới của Hoàng
+﻿using hoangstore.Models.VNPay;
+using Microsoft.AspNetCore.Http;
 
-namespace hoangstore.Services
+namespace hoangstore.Models.Services
 {
     public interface IVnPayService
     {
-        string CreatePaymentUrl(HttpContext context, VnPaymentRequest request);
-        VnPaymentResponse PaymentExecute(IQueryCollection collections);
+        string CreatePaymentUrl(
+            HttpContext context,
+            VnPaymentRequest request);
+
+        VnPaymentResponse PaymentExecute(
+            IQueryCollection collections);
     }
 }

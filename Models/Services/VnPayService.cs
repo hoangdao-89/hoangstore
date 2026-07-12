@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -10,17 +7,8 @@ using hoangstore.Models.VNPay;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace hoangstore.Models.Services // Đã khớp với thư mục Models/Services của Hoàng
+namespace hoangstore.Models.Services
 {
-    // =======================================================================
-    // 1. LỚP INTERFACE & DỊCH VỤ CHÍNH (Controller sẽ gọi cái này)
-    // =======================================================================
-    public interface IVnPayService
-    {
-        string CreatePaymentUrl(HttpContext context, VnPaymentRequest request);
-        VnPaymentResponse PaymentExecute(IQueryCollection collections);
-    }
-
     public class VnPayService : IVnPayService
     {
         private readonly IConfiguration _configuration;
@@ -30,194 +18,327 @@ namespace hoangstore.Models.Services // Đã khớp với thư mục Models/Serv
             _configuration = configuration;
         }
 
-        public string CreatePaymentUrl(HttpContext context, VnPaymentRequest request)
+        public string CreatePaymentUrl(
+            HttpContext context,
+            VnPaymentRequest request)
         {
-            var vnpayConfig = _configuration.GetSection("Vnpay");
-            var vnpay = new VnPayLibrary(); // Lớp này nằm ngay bên dưới file này
+            var config = _configuration.GetSection("Vnpay");
 
-            string ipAddress = Utils.GetIpAddress(context);
-            if (string.IsNullOrEmpty(ipAddress) || ipAddress == "::1" || ipAddress.Contains(":"))
-            {
-                ipAddress = "127.0.0.1";
-            }
+            var baseUrl = GetRequiredConfig(config, "BaseUrl");
+            var tmnCode = GetRequiredConfig(config, "TmnCode");
+            var hashSecret = GetRequiredConfig(config, "HashSecret");
+            var returnUrl = GetRequiredConfig(config, "ReturnUrl");
 
-            vnpay.AddRequestData("vnp_Version", vnpayConfig["Version"] ?? "2.1.0");
-            vnpay.AddRequestData("vnp_Command", vnpayConfig["Command"] ?? "pay");
-            vnpay.AddRequestData("vnp_TmnCode", vnpayConfig["TmnCode"].Trim());
-            vnpay.AddRequestData("vnp_Amount", ((long)(request.Amount * 100)).ToString());
-            vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
-            vnpay.AddRequestData("vnp_CurrCode", vnpayConfig["CurrCode"] ?? "VND");
-            vnpay.AddRequestData("vnp_IpAddr", ipAddress);
-            vnpay.AddRequestData("vnp_Locale", vnpayConfig["Locale"] ?? "vn");
-            vnpay.AddRequestData("vnp_OrderInfo", "ThanhToanDonHang" + request.OrderId);
-            vnpay.AddRequestData("vnp_OrderType", "other");
-
-            // Link ngrok 
-            string returnUrl = vnpayConfig["ReturnUrl"];
-            vnpay.AddRequestData("vnp_ReturnUrl", returnUrl);
-
-            vnpay.AddRequestData("vnp_TxnRef", request.OrderId.ToString() + DateTime.Now.Ticks.ToString());
-            vnpay.AddRequestData("vnp_ExpireDate", DateTime.Now.AddMinutes(15).ToString("yyyyMMddHHmmss"));
-
-            if (!string.IsNullOrEmpty(request.BankCode))
-            {
-                vnpay.AddRequestData("vnp_BankCode", request.BankCode);
-            }
-
-            return vnpay.CreateRequestUrl(vnpayConfig["BaseUrl"].Trim(), vnpayConfig["HashSecret"].Trim());
-        }
-
-        public VnPaymentResponse PaymentExecute(IQueryCollection collections)
-        {
-            var vnpayConfig = _configuration.GetSection("Vnpay");
+            var now = DateTime.Now;
             var vnpay = new VnPayLibrary();
 
-            foreach (var (key, value) in collections)
+            var ipAddress = Utils.GetIpAddress(context);
+
+            vnpay.AddRequestData(
+                "vnp_Version",
+                config["Version"] ?? "2.1.0");
+
+            vnpay.AddRequestData(
+                "vnp_Command",
+                config["Command"] ?? "pay");
+
+            vnpay.AddRequestData(
+                "vnp_TmnCode",
+                tmnCode);
+
+            vnpay.AddRequestData(
+                "vnp_Amount",
+                ((long)(request.Amount * 100m))
+                .ToString(CultureInfo.InvariantCulture));
+
+            vnpay.AddRequestData(
+                "vnp_CreateDate",
+                now.ToString("yyyyMMddHHmmss"));
+
+            vnpay.AddRequestData(
+                "vnp_CurrCode",
+                config["CurrCode"] ?? "VND");
+
+            vnpay.AddRequestData(
+                "vnp_IpAddr",
+                ipAddress);
+
+            vnpay.AddRequestData(
+                "vnp_Locale",
+                config["Locale"] ?? "vn");
+
+            vnpay.AddRequestData(
+                "vnp_OrderInfo",
+                string.IsNullOrWhiteSpace(request.OrderDescription)
+                    ? $"ThanhToanDonHang{request.OrderId}"
+                    : request.OrderDescription);
+
+            vnpay.AddRequestData(
+                "vnp_OrderType",
+                "other");
+
+            vnpay.AddRequestData(
+                "vnp_ReturnUrl",
+                returnUrl);
+
+            // Có dấu "_" để PaymentController lấy lại đúng OrderId.
+            vnpay.AddRequestData(
+                "vnp_TxnRef",
+                $"{request.OrderId}_{DateTime.Now.Ticks}");
+
+            vnpay.AddRequestData(
+                "vnp_ExpireDate",
+                now.AddMinutes(15)
+                    .ToString("yyyyMMddHHmmss"));
+
+            if (!string.IsNullOrWhiteSpace(request.BankCode))
             {
-                if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp_"))
+                vnpay.AddRequestData(
+                    "vnp_BankCode",
+                    request.BankCode);
+            }
+
+            return vnpay.CreateRequestUrl(
+                baseUrl,
+                hashSecret);
+        }
+
+        public VnPaymentResponse PaymentExecute(
+            IQueryCollection collections)
+        {
+            var config = _configuration.GetSection("Vnpay");
+            var hashSecret = GetRequiredConfig(config, "HashSecret");
+
+            var vnpay = new VnPayLibrary();
+
+            foreach (var item in collections)
+            {
+                if (!string.IsNullOrWhiteSpace(item.Key) &&
+                    item.Key.StartsWith(
+                        "vnp_",
+                        StringComparison.OrdinalIgnoreCase))
                 {
-                    vnpay.AddResponseData(key, value.ToString());
+                    vnpay.AddResponseData(
+                        item.Key,
+                        item.Value.ToString());
                 }
             }
 
-            string vnp_SecureHash = collections.FirstOrDefault(p => p.Key == "vnp_SecureHash").Value;
-            bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, vnpayConfig["HashSecret"].Trim());
+            var secureHash =
+                collections["vnp_SecureHash"].ToString();
 
-            if (!checkSignature)
+            if (string.IsNullOrWhiteSpace(secureHash))
             {
-                return new VnPaymentResponse { Success = false };
+                return new VnPaymentResponse
+                {
+                    Success = false
+                };
             }
+
+            var isValidSignature =
+                vnpay.ValidateSignature(
+                    secureHash,
+                    hashSecret);
+
+            if (!isValidSignature)
+            {
+                return new VnPaymentResponse
+                {
+                    Success = false
+                };
+            }
+
+            decimal.TryParse(
+                vnpay.GetResponseData("vnp_Amount"),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var amountInMinorUnit);
 
             return new VnPaymentResponse
             {
+                // Success ở đây nghĩa là chữ ký hợp lệ,
+                // chưa có nghĩa giao dịch đã thanh toán thành công.
                 Success = true,
+
                 PaymentMethod = "VNPAY",
-                OrderDescription = vnpay.GetResponseData("vnp_OrderInfo"),
-                OrderId = vnpay.GetResponseData("vnp_TxnRef"),
-                TransactionId = vnpay.GetResponseData("vnp_TransactionNo"),
-                VnPayResponseCode = vnpay.GetResponseData("vnp_ResponseCode")
+
+                OrderDescription =
+                    vnpay.GetResponseData("vnp_OrderInfo"),
+
+                OrderId =
+                    vnpay.GetResponseData("vnp_TxnRef"),
+
+                TransactionId =
+                    vnpay.GetResponseData(
+                        "vnp_TransactionNo"),
+
+                VnPayResponseCode =
+                    vnpay.GetResponseData(
+                        "vnp_ResponseCode"),
+
+                TransactionStatus =
+                    vnpay.GetResponseData(
+                        "vnp_TransactionStatus"),
+
+                Amount = amountInMinorUnit / 100m
             };
+        }
+
+        private static string GetRequiredConfig(
+            IConfigurationSection section,
+            string key)
+        {
+            var value = section[key];
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new InvalidOperationException(
+                    $"Thiếu cấu hình Vnpay:{key} trong appsettings.");
+            }
+
+            return value.Trim();
         }
     }
 
-    // =======================================================================
-    // 2. LỚP VNPAY LIBRARY ĐÃ ĐƯỢC FIX LỖI URI.ESCAPEDATASTRING BÊN TRONG 
-    // =======================================================================
     public class VnPayLibrary
     {
-        private readonly SortedList<string, string> _requestData = new SortedList<string, string>(new VnPayCompare());
-        private readonly SortedList<string, string> _responseData = new SortedList<string, string>(new VnPayCompare());
+        private readonly SortedList<string, string> _requestData =
+            new(StringComparer.Ordinal);
 
-        public void AddRequestData(string key, string value)
+        private readonly SortedList<string, string> _responseData =
+            new(StringComparer.Ordinal);
+
+        public void AddRequestData(
+            string key,
+            string value)
         {
-            if (!string.IsNullOrEmpty(value)) _requestData.Add(key, value);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                _requestData[key] = value;
+            }
         }
 
-        public void AddResponseData(string key, string value)
+        public void AddResponseData(
+            string key,
+            string value)
         {
-            if (!string.IsNullOrEmpty(value)) _responseData.Add(key, value);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                _responseData[key] = value;
+            }
         }
 
         public string GetResponseData(string key)
         {
-            return _responseData.TryGetValue(key, out var retValue) ? retValue : string.Empty;
+            return _responseData.TryGetValue(
+                key,
+                out var value)
+                    ? value
+                    : string.Empty;
         }
 
-        public string CreateRequestUrl(string baseUrl, string vnpHashSecret)
+        public string CreateRequestUrl(
+            string baseUrl,
+            string hashSecret)
         {
-            var data = new StringBuilder();
-            foreach (var (key, value) in _requestData.Where(kv => !string.IsNullOrEmpty(kv.Value)))
-            {
-                // 🔥 ĐÂY LÀ ĐIỂM "ĂN TIỀN": Ép mã hóa chuẩn chữ HOA (%3A thay vì %3a) cho Link Ngrok
-                data.Append(Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value) + "&");
-            }
+            var queryString = BuildQueryString(
+                _requestData,
+                excludeSecureHash: false);
 
-            var querystring = data.ToString();
-            baseUrl += "?" + querystring;
-            var signData = querystring;
-            if (signData.Length > 0) signData = signData.Remove(data.Length - 1, 1);
+            var secureHash =
+                Utils.HmacSHA512(
+                    hashSecret,
+                    queryString);
 
-            var vnpSecureHash = Utils.HmacSHA512(vnpHashSecret, signData);
-            baseUrl += "vnp_SecureHash=" + vnpSecureHash;
-
-            return baseUrl;
+            return
+                $"{baseUrl}?{queryString}&vnp_SecureHash={secureHash}";
         }
 
-        public bool ValidateSignature(string inputHash, string secretKey)
+        public bool ValidateSignature(
+            string inputHash,
+            string secretKey)
         {
-            var rspRaw = GetResponseData();
-            var myChecksum = Utils.HmacSHA512(secretKey, rspRaw);
-            return myChecksum.Equals(inputHash, StringComparison.InvariantCultureIgnoreCase);
+            var responseData = BuildQueryString(
+                _responseData,
+                excludeSecureHash: true);
+
+            var calculatedHash =
+                Utils.HmacSHA512(
+                    secretKey,
+                    responseData);
+
+            return string.Equals(
+                calculatedHash,
+                inputHash,
+                StringComparison.OrdinalIgnoreCase);
         }
 
-        private string GetResponseData()
+        private static string BuildQueryString(
+            IEnumerable<KeyValuePair<string, string>> data,
+            bool excludeSecureHash)
         {
-            var data = new StringBuilder();
-            if (_responseData.ContainsKey("vnp_SecureHashType")) _responseData.Remove("vnp_SecureHashType");
-            if (_responseData.ContainsKey("vnp_SecureHash")) _responseData.Remove("vnp_SecureHash");
+            var parts = data
+                .Where(item =>
+                    !string.IsNullOrWhiteSpace(item.Value))
+                .Where(item =>
+                    !excludeSecureHash ||
+                    (item.Key != "vnp_SecureHash" &&
+                     item.Key != "vnp_SecureHashType"))
+                .Select(item =>
+                    $"{Uri.EscapeDataString(item.Key)}=" +
+                    $"{Uri.EscapeDataString(item.Value)}");
 
-            foreach (var (key, value) in _responseData.Where(kv => !string.IsNullOrEmpty(kv.Value)))
-            {
-                data.Append(Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value) + "&");
-            }
-
-            if (data.Length > 0) data.Remove(data.Length - 1, 1);
-            return data.ToString();
+            return string.Join("&", parts);
         }
     }
 
-    // =======================================================================
-    // 3. LỚP UTILS BĂM SHA512 VÀ XỬ LÝ SO SÁNH
-    // =======================================================================
-    public class Utils
+    public static class Utils
     {
-        public static string HmacSHA512(string key, string inputData)
+        public static string HmacSHA512(
+            string key,
+            string inputData)
         {
-            var hash = new StringBuilder();
             var keyBytes = Encoding.UTF8.GetBytes(key);
             var inputBytes = Encoding.UTF8.GetBytes(inputData);
-            using (var hmac = new HMACSHA512(keyBytes))
-            {
-                var hashValue = hmac.ComputeHash(inputBytes);
-                foreach (var theByte in hashValue) hash.Append(theByte.ToString("x2"));
-            }
-            return hash.ToString();
+
+            using var hmac = new HMACSHA512(keyBytes);
+
+            var hashValue = hmac.ComputeHash(inputBytes);
+
+            return Convert.ToHexString(hashValue)
+                .ToLowerInvariant();
         }
 
-        public static string GetIpAddress(HttpContext context)
+        public static string GetIpAddress(
+            HttpContext context)
         {
-            var ipAddress = string.Empty;
             try
             {
-                var remoteIpAddress = context.Connection.RemoteIpAddress;
-                if (remoteIpAddress != null)
+                var remoteIp =
+                    context.Connection.RemoteIpAddress;
+
+                if (remoteIp == null)
                 {
-                    if (remoteIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
-                    {
-                        remoteIpAddress = Dns.GetHostEntry(remoteIpAddress).AddressList
-                            .FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
-                    }
-                    if (remoteIpAddress != null) ipAddress = remoteIpAddress.ToString();
-                    return ipAddress;
+                    return "127.0.0.1";
                 }
+
+                if (remoteIp.IsIPv4MappedToIPv6)
+                {
+                    remoteIp = remoteIp.MapToIPv4();
+                }
+
+                if (remoteIp.AddressFamily !=
+                    AddressFamily.InterNetwork)
+                {
+                    return "127.0.0.1";
+                }
+
+                return remoteIp.ToString();
             }
-            catch (Exception)
+            catch
             {
                 return "127.0.0.1";
             }
-            return "127.0.0.1";
-        }
-    }
-
-    public class VnPayCompare : IComparer<string>
-    {
-        public int Compare(string x, string y)
-        {
-            if (x == y) return 0;
-            if (x == null) return -1;
-            if (y == null) return 1;
-            var vnpCompare = CompareInfo.GetCompareInfo("en-US");
-            return vnpCompare.Compare(x, y, CompareOptions.Ordinal);
         }
     }
 }
