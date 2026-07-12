@@ -1,0 +1,364 @@
+﻿@using hoangstore.Helpers
+@model IEnumerable<hoangstore.Models.Order>
+
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+
+    const string fallbackImage =
+        "https://placehold.co/120x140?text=No+Image";
+
+    var orders = Model?.ToList()
+                 ?? new List<hoangstore.Models.Order>();
+}
+
+<div class="container py-5">
+
+    <div class="d-flex flex-wrap
+        justify-content-between
+        align-items-center
+        gap-3 mb-4 pb-3 border-bottom">
+
+        <div>
+            <h2 class="serif-font fw-bold
+                text-uppercase mb-1">
+
+                Đơn hàng của tôi
+            </h2>
+
+            <p class="text-muted mb-0">
+                Theo dõi các đơn hàng bạn đã đặt tại HoangStore.
+            </p>
+        </div>
+
+        <a asp-controller="Home"
+           asp-action="Index"
+           asp-fragment="product-list"
+           class="btn btn-outline-dark rounded-0">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Tiếp tục mua sắm
+        </a>
+    </div>
+
+    @if (!orders.Any())
+    {
+        <div class="text-center
+            border bg-light
+            shadow-sm py-5 px-3">
+
+            <i class="bi bi-box-seam text-muted"
+               style="font-size: 4rem;">
+            </i>
+
+            <h4 class="fw-bold mt-3">
+                Bạn chưa có đơn hàng nào
+            </h4>
+
+            <p class="text-muted mb-4">
+                Hãy lựa chọn sản phẩm và tạo đơn hàng đầu tiên.
+            </p>
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               asp-fragment="product-list"
+               class="btn btn-danger
+                rounded-0 px-4 py-2
+                text-uppercase fw-bold">
+
+                Mua sắm ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            @foreach (var order in orders)
+            {
+                var orderDetails =
+                    order.OrderDetails?.ToList()
+                    ?? new List<hoangstore.Models.OrderDetail>();
+
+                var totalQuantity =
+                    orderDetails.Sum(
+                        detail => detail.Quantity);
+
+                var paymentName =
+                    string.Equals(
+                        order.PaymentMethod,
+                        "VNPAY",
+                        StringComparison.OrdinalIgnoreCase)
+                        ? "Thanh toán qua VNPAY"
+                        : "Thanh toán khi nhận hàng";
+
+                <div class="col-12">
+
+                    <div class="card border-0
+                        rounded-0 shadow-sm
+                        order-history-card">
+
+                        <!-- Thông tin đầu đơn -->
+                        <div class="card-header bg-white
+                            d-flex flex-wrap
+                            justify-content-between
+                            align-items-center
+                            gap-3 p-4">
+
+                            <div>
+                                <div class="fw-bold fs-5">
+                                    Đơn hàng #@order.Id
+                                </div>
+
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-calendar3 me-1"></i>
+
+                                    @order.OrderDate.ToString(
+                                        "dd/MM/yyyy HH:mm")
+                                </div>
+                            </div>
+
+                            <span class="badge rounded-pill
+                                px-3 py-2
+                                @order.Status.ToBadgeClass()">
+
+                                @order.Status.ToDisplayName()
+                            </span>
+                        </div>
+
+                        <!-- Danh sách sản phẩm -->
+                        <div class="card-body p-0">
+
+                            @if (!orderDetails.Any())
+                            {
+                                <div class="text-center
+                                    text-muted py-4">
+
+                                    Không có thông tin sản phẩm.
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var detail
+                                    in orderDetails)
+                                {
+                                    var variant =
+                                        detail.ProductVariant;
+
+                                    var product =
+                                        variant?.Product;
+
+                                    var productName =
+                                        product?.Product_Name
+                                        ?? "Sản phẩm không còn tồn tại";
+
+                                    var productImage =
+                                        !string.IsNullOrWhiteSpace(
+                                            variant?.Variant_Image_Url)
+                                            ? variant.Variant_Image_Url
+                                            : !string.IsNullOrWhiteSpace(
+                                                product?.Image_Url)
+                                                ? product.Image_Url
+                                                : fallbackImage;
+
+                                    var size =
+                                        variant?.Size
+                                        ?? "Không xác định";
+
+                                    var color =
+                                        variant?.Color
+                                        ?? "Không xác định";
+
+                                    var lineTotal =
+                                        detail.Price *
+                                        detail.Quantity;
+
+                                    <div class="order-preview-product
+                                        d-flex gap-3
+                                        align-items-center
+                                        p-4 border-bottom">
+
+                                        <img src="@productImage"
+                                             alt="@productName"
+                                             class="order-preview-image"
+                                             onerror="this.onerror=null;this.src='@fallbackImage';" />
+
+                                        <div class="flex-grow-1
+                                            min-width-0">
+
+                                            <h6 class="fw-bold
+                                                text-uppercase
+                                                mb-2
+                                                order-product-name">
+
+                                                @productName
+                                            </h6>
+
+                                            <div class="d-flex
+                                                flex-wrap
+                                                gap-2 mb-2">
+
+                                                <span class="badge
+                                                    bg-light
+                                                    text-dark
+                                                    border
+                                                    rounded-0">
+
+                                                    Size: @size
+                                                </span>
+
+                                                <span class="badge
+                                                    bg-light
+                                                    text-dark
+                                                    border
+                                                    rounded-0">
+
+                                                    Màu: @color
+                                                </span>
+                                            </div>
+
+                                            <div class="text-muted small">
+                                                @detail.Price.ToString("N0") đ
+                                                × @detail.Quantity
+                                            </div>
+                                        </div>
+
+                                        <div class="text-end
+                                            d-none d-sm-block">
+
+                                            <div class="text-muted small mb-1">
+                                                Thành tiền
+                                            </div>
+
+                                            <div class="fw-bold text-danger">
+                                                @lineTotal.ToString("N0") đ
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+
+                            <!-- Tổng quan đơn hàng -->
+                            <div class="row g-0
+                                order-summary-section">
+
+                                <div class="col-md-4
+                                    p-4 border-end">
+
+                                    <div class="text-muted
+                                        small text-uppercase mb-1">
+
+                                        Số lượng sản phẩm
+                                    </div>
+
+                                    <div class="fw-bold">
+                                        @totalQuantity sản phẩm
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4
+                                    p-4 border-end">
+
+                                    <div class="text-muted
+                                        small text-uppercase mb-1">
+
+                                        Thanh toán
+                                    </div>
+
+                                    <div class="fw-bold">
+                                        @paymentName
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4 p-4">
+
+                                    <div class="text-muted
+                                        small text-uppercase mb-1">
+
+                                        Tổng tiền
+                                    </div>
+
+                                    <div class="fw-bold
+                                        text-danger fs-5">
+
+                                        @order.TotalPrice.ToString("N0") đ
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white
+                            border-top p-4
+                            text-end">
+
+                            <a asp-controller="Order"
+                               asp-action="Details"
+                               asp-route-id="@order.Id"
+                               class="btn btn-dark
+                                rounded-0 px-4">
+
+                                <i class="bi bi-eye me-1"></i>
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .order-history-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .order-history-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+        }
+
+    .order-preview-image {
+        width: 85px;
+        height: 105px;
+        flex: 0 0 85px;
+        object-fit: cover;
+        border: 1px solid #eeeeee;
+        background-color: #f8f8f8;
+    }
+
+    .min-width-0 {
+        min-width: 0;
+    }
+
+    .order-product-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .order-summary-section {
+        background-color: #fcfcfc;
+    }
+
+    @@media (max-width: 767.98px) {
+        .order-summary-section > div {
+            border-right: 0 !important;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+            .order-summary-section > div:last-child {
+                border-bottom: 0;
+            }
+    }
+
+    @@media (max-width: 575.98px) {
+        .order-preview-product {
+            align-items: flex-start !important;
+        }
+
+        .order-preview-image {
+            width: 70px;
+            height: 90px;
+            flex-basis: 70px;
+        }
+    }
+</style>

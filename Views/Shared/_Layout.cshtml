@@ -6,9 +6,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
 
-    <title>
-        @ViewData["Title"] - HoangStore
-    </title>
+    <title>@ViewData["Title"] - HoangStore</title>
 
     <link rel="stylesheet"
           href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -33,7 +31,6 @@
 
 <body>
     <header>
-        <!-- Thanh tiện ích phía trên -->
         <div class="top-utility-bar">
             <div class="container-wide d-flex
                         justify-content-between
@@ -59,7 +56,7 @@
                             </a>
 
                             <span class="text-white mx-1">
-                                |
+                                ||
                             </span>
 
                             <form id="logoutForm"
@@ -75,6 +72,7 @@
                                 <a href="javascript:void(0)"
                                    onclick="document.getElementById('logoutForm').submit()"
                                    class="text-white text-decoration-none">
+
                                     Đăng xuất
                                 </a>
                             </form>
@@ -84,6 +82,7 @@
                             <a asp-area="Identity"
                                asp-page="/Account/Login"
                                class="text-white text-decoration-none">
+
                                 Đăng nhập
                             </a>
 
@@ -94,16 +93,15 @@
                             <a asp-area="Identity"
                                asp-page="/Account/Register"
                                class="text-white text-decoration-none">
+
                                 Đăng ký
                             </a>
                         }
-
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Header chính -->
         <div class="main-header bg-white sticky-top shadow-sm">
             <div class="container-wide d-flex
                         justify-content-between
@@ -132,11 +130,11 @@
                                asp-area=""
                                asp-controller="Home"
                                asp-action="Index">
+
                                 Trang chủ
                             </a>
                         </li>
 
-                        <!-- Menu Nam -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle"
                                href="#"
@@ -144,6 +142,7 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
+
                                 Nam
                             </a>
 
@@ -156,6 +155,7 @@
                                     <a class="dropdown-item
                                               dropdown-item-nam"
                                        href="#">
+
                                         Áo nam
                                     </a>
                                 </li>
@@ -164,6 +164,7 @@
                                     <a class="dropdown-item
                                               dropdown-item-nam"
                                        href="#">
+
                                         Quần nam
                                     </a>
                                 </li>
@@ -172,13 +173,13 @@
                                     <a class="dropdown-item
                                               dropdown-item-nam"
                                        href="#">
+
                                         Phụ kiện
                                     </a>
                                 </li>
                             </ul>
                         </li>
 
-                        <!-- Menu Nữ -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle"
                                href="#"
@@ -186,6 +187,7 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
+
                                 Nữ
                             </a>
 
@@ -198,6 +200,7 @@
                                     <a class="dropdown-item
                                               dropdown-item-nu"
                                        href="#">
+
                                         Áo nữ
                                     </a>
                                 </li>
@@ -206,6 +209,7 @@
                                     <a class="dropdown-item
                                               dropdown-item-nu"
                                        href="#">
+
                                         Quần nữ
                                     </a>
                                 </li>
@@ -214,6 +218,7 @@
                                     <a class="dropdown-item
                                               dropdown-item-nu"
                                        href="#">
+
                                         Váy
                                     </a>
                                 </li>
@@ -222,6 +227,7 @@
                                     <a class="dropdown-item
                                               dropdown-item-nu"
                                        href="#">
+
                                         Phụ kiện
                                     </a>
                                 </li>
@@ -231,6 +237,7 @@
                         <li class="nav-item">
                             <a class="nav-link"
                                href="#">
+
                                 Mới
                             </a>
                         </li>
@@ -238,6 +245,7 @@
                         <li class="nav-item">
                             <a class="nav-link"
                                href="#">
+
                                 Nổi bật
                             </a>
                         </li>
@@ -245,18 +253,18 @@
                         <li class="nav-item">
                             <a class="nav-link text-danger"
                                href="#">
+
                                 Sale
                             </a>
                         </li>
-
                     </ul>
                 </div>
 
-                <!-- Góc phải -->
+                <!-- Khu vực bên phải -->
                 <div class="header-right d-flex
                             align-items-center gap-3">
 
-                    <!-- Thanh tìm kiếm -->
+                    <!-- Tìm kiếm -->
                     <form asp-area=""
                           asp-controller="Home"
                           asp-action="Index"
@@ -292,16 +300,16 @@
                         </button>
                     </form>
 
-                    <!-- Yêu thích -->
-                    <a href="#"
-                       title="Yêu thích"
-                       class="position-relative">
+                    <!-- Đơn hàng -->
+                    <a asp-area=""
+                       asp-controller="Order"
+                       asp-action="Index"
+                       title="Đơn hàng của tôi"
+                       aria-label="Đơn hàng của tôi"
+                       class="position-relative
+                              header-action-link">
 
-                        <i class="bi bi-heart"></i>
-
-                        <span class="wishlist-count">
-                            @ViewBag.ProductlistsCount
-                        </span>
+                        <i class="bi bi-box-seam"></i>
                     </a>
 
                     <!-- Giỏ hàng -->
@@ -309,7 +317,9 @@
                        asp-controller="Cart"
                        asp-action="Index"
                        title="Giỏ hàng"
-                       class="position-relative">
+                       aria-label="Giỏ hàng"
+                       class="position-relative
+                              header-action-link">
 
                         <i class="bi bi-bag"></i>
 
@@ -320,7 +330,6 @@
         </div>
     </header>
 
-    <!-- Nội dung -->
     <div class="container-fluid p-0">
         <main role="main">
             @RenderBody()

@@ -1,0 +1,366 @@
+﻿@using hoangstore.Helpers
+@model hoangstore.Models.Order
+
+@{
+    ViewData["Title"] =
+        $"Chi tiết đơn hàng #{Model.Id}";
+
+    const string fallbackImage =
+        "https://placehold.co/120x140?text=No+Image";
+
+    var orderDetails =
+        Model.OrderDetails?.ToList()
+        ?? new List<hoangstore.Models.OrderDetail>();
+
+    var paymentName =
+        string.Equals(
+            Model.PaymentMethod,
+            "VNPAY",
+            StringComparison.OrdinalIgnoreCase)
+            ? "Thanh toán qua VNPAY"
+            : "Thanh toán khi nhận hàng";
+}
+
+<div class="container py-5">
+
+    <div class="d-flex flex-wrap
+        justify-content-between
+        align-items-center
+        gap-3 mb-4 pb-3 border-bottom">
+
+        <div>
+            <h2 class="serif-font fw-bold
+                text-uppercase mb-1">
+
+                Chi tiết đơn hàng #@Model.Id
+            </h2>
+
+            <div class="text-muted">
+                <i class="bi bi-calendar3 me-1"></i>
+
+                Đặt lúc
+                @Model.OrderDate.ToString(
+                    "dd/MM/yyyy HH:mm")
+            </div>
+        </div>
+
+        <div class="d-flex
+            align-items-center gap-2">
+
+            <span class="badge rounded-pill
+                px-3 py-2
+                @Model.Status.ToBadgeClass()">
+
+                @Model.Status.ToDisplayName()
+            </span>
+
+            <a asp-controller="Order"
+               asp-action="Index"
+               class="btn btn-outline-dark
+                rounded-0">
+
+                <i class="bi bi-arrow-left me-1"></i>
+                Quay lại
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+
+            <div class="card border-0
+                rounded-0 shadow-sm">
+
+                <div class="card-header
+                    bg-white p-4">
+
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-box-seam me-2"></i>
+                        Sản phẩm trong đơn
+                    </h5>
+                </div>
+
+                <div class="card-body p-0">
+
+                    @if (!orderDetails.Any())
+                    {
+                        <div class="text-center
+                            text-muted py-5">
+
+                            <i class="bi bi-box
+                                d-block mb-2"
+                               style="font-size: 2rem;">
+                            </i>
+
+                            Không có dữ liệu sản phẩm.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var detail
+                            in orderDetails)
+                        {
+                            var variant =
+                                detail.ProductVariant;
+
+                            var product =
+                                variant?.Product;
+
+                            var productName =
+                                product?.Product_Name
+                                ?? "Sản phẩm không còn tồn tại";
+
+                            var productImage =
+                                !string.IsNullOrWhiteSpace(
+                                    variant?.Variant_Image_Url)
+                                    ? variant.Variant_Image_Url
+                                    : !string.IsNullOrWhiteSpace(
+                                        product?.Image_Url)
+                                        ? product.Image_Url
+                                        : fallbackImage;
+
+                            var size =
+                                variant?.Size
+                                ?? "Không xác định";
+
+                            var color =
+                                variant?.Color
+                                ?? "Không xác định";
+
+                            var lineTotal =
+                                detail.Price *
+                                detail.Quantity;
+
+                            <div class="order-product-row
+                                d-flex gap-3
+                                p-4 border-bottom">
+
+                                <img src="@productImage"
+                                     alt="@productName"
+                                     class="order-product-image"
+                                     onerror="this.onerror=null;this.src='@fallbackImage';" />
+
+                                <div class="flex-grow-1
+                                    min-width-0">
+
+                                    <h6 class="fw-bold
+                                        text-uppercase
+                                        mb-2">
+
+                                        @productName
+                                    </h6>
+
+                                    <div class="d-flex
+                                        flex-wrap
+                                        gap-2 mb-2">
+
+                                        <span class="badge
+                                            bg-light
+                                            text-dark
+                                            border
+                                            rounded-0">
+
+                                            Size: @size
+                                        </span>
+
+                                        <span class="badge
+                                            bg-light
+                                            text-dark
+                                            border
+                                            rounded-0">
+
+                                            Màu: @color
+                                        </span>
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Đơn giá:
+                                        <strong class="text-dark">
+                                            @detail.Price.ToString("N0") đ
+                                        </strong>
+                                    </div>
+
+                                    <div class="text-muted small mt-1">
+                                        Số lượng:
+                                        <strong class="text-dark">
+                                            @detail.Quantity
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <div class="text-end
+                                    align-self-center">
+
+                                    <div class="text-muted
+                                        small mb-1">
+
+                                        Thành tiền
+                                    </div>
+
+                                    <div class="fw-bold
+                                        text-danger fs-5">
+
+                                        @lineTotal.ToString("N0") đ
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <div class="card-footer
+                    bg-white p-4">
+
+                    <div class="d-flex
+                        justify-content-end
+                        align-items-center
+                        gap-3">
+
+                        <span class="text-muted">
+                            Tổng thanh toán:
+                        </span>
+
+                        <span class="text-danger
+                            fw-bold fs-3">
+
+                            @Model.TotalPrice.ToString("N0") đ
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+
+            <div class="card border-0
+                rounded-0 shadow-sm mb-4">
+
+                <div class="card-header
+                    bg-white p-4">
+
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-geo-alt me-2"></i>
+                        Thông tin nhận hàng
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <div class="mb-3">
+                        <div class="text-muted
+                            small text-uppercase">
+
+                            Người nhận
+                        </div>
+
+                        <div class="fw-bold mt-1">
+                            @Model.ReceiverName
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted
+                            small text-uppercase">
+
+                            Số điện thoại
+                        </div>
+
+                        <div class="fw-bold mt-1">
+                            @Model.ReceiverPhone
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-muted
+                            small text-uppercase">
+
+                            Địa chỉ nhận hàng
+                        </div>
+
+                        <div class="mt-1">
+                            @Model.ShippingAddress
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0
+                rounded-0 shadow-sm">
+
+                <div class="card-header
+                    bg-white p-4">
+
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-credit-card me-2"></i>
+                        Thanh toán
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex
+                        justify-content-between
+                        gap-3 mb-3">
+
+                        <span class="text-muted">
+                            Phương thức
+                        </span>
+
+                        <strong class="text-end">
+                            @paymentName
+                        </strong>
+                    </div>
+
+                    <div class="d-flex
+                        justify-content-between
+                        gap-3">
+
+                        <span class="text-muted">
+                            Trạng thái
+                        </span>
+
+                        <span class="badge
+                            @Model.Status.ToBadgeClass()">
+
+                            @Model.Status.ToDisplayName()
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .order-product-image {
+        width: 110px;
+        height: 130px;
+        flex: 0 0 110px;
+        object-fit: cover;
+        border: 1px solid #eeeeee;
+        background: #f8f8f8;
+    }
+
+    .min-width-0 {
+        min-width: 0;
+    }
+
+    @@media (max-width: 576px) {
+        .order-product-row {
+            flex-wrap: wrap;
+        }
+
+        .order-product-image {
+            width: 85px;
+            height: 105px;
+            flex-basis: 85px;
+        }
+
+        .order-product-row > .text-end {
+            width: 100%;
+            text-align: left !important;
+            padding-left: 100px;
+        }
+    }
+</style>

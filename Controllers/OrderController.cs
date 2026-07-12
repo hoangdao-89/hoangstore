@@ -28,6 +28,64 @@ namespace hoangstore.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var userId = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var orders = await _db.Orders
+                .AsNoTracking()
+                .Where(order => order.UserId == userId)
+                .Include(order => order.OrderDetails)
+                    .ThenInclude(detail => detail.ProductVariant)
+                        .ThenInclude(variant => variant!.Product)
+                .OrderByDescending(order => order.OrderDate)
+                .ThenByDescending(order => order.Id)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        [HttpGet("/Order/Details/{id:int}")]
+        public async Task<IActionResult> Details(int id)
+        {
+            if (id <= 0)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var order = await _db.Orders
+                .AsNoTracking()
+                .Where(item =>
+                    item.Id == id &&
+                    item.UserId == userId)
+                .Include(item => item.OrderDetails)
+                    .ThenInclude(detail => detail.ProductVariant)
+                        .ThenInclude(variant => variant!.Product)
+                .FirstOrDefaultAsync();
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(order);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Checkout(string itemIds)
         {
             if (!TryParseCartItemIds(itemIds, out var listIds))
@@ -299,19 +357,12 @@ namespace hoangstore.Controllers
                 var newOrder = new Order
                 {
                     UserId = userId,
-
                     ReceiverName = receiverName,
-
                     ReceiverPhone = receiverPhone,
-
                     ShippingAddress = shippingAddress,
-
                     PaymentMethod = paymentMethod,
-
                     TotalPrice = totalOrderPrice,
-
                     OrderDate = DateTime.Now,
-
                     Status = OrderStatus.Pending
                 };
 
@@ -324,26 +375,19 @@ namespace hoangstore.Controllers
                     var orderDetail = new OrderDetail
                     {
                         Order = newOrder,
-
-                        ProductVariantId =
-                            item.ProductVariantId,
-
+                        ProductVariantId = item.ProductVariantId,
                         Quantity = item.Quantity,
-
                         Price = variant.Price
                     };
 
                     _db.OrderDetails.Add(orderDetail);
 
-                    // COD: trừ kho khi đặt đơn.
-                    // VNPAY: giữ hàng tạm thời trong lúc thanh toán.
                     variant.Quantity -= item.Quantity;
                 }
 
                 _db.CartItems.RemoveRange(selectedItems);
 
                 await _db.SaveChangesAsync();
-
                 await transaction.CommitAsync();
 
                 if (paymentMethod == VnPayPaymentMethod)
@@ -414,11 +458,6 @@ namespace hoangstore.Controllers
 
             ViewBag.OrderId = id;
 
-            return View();
-        }
-
-        public IActionResult Index()
-        {
             return View();
         }
 
