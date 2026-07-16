@@ -160,7 +160,7 @@ namespace hoangstore.Controllers
                 SelectedItems = selectedItems,
 
                 TotalOrderPrice = selectedItems.Sum(item =>
-                    item.ProductVariant!.Price * item.Quantity),
+                    item.ProductVariant!.FinalPrice * item.Quantity),
 
                 SelectedCartItemIds = string.Join(",", listIds)
             };
@@ -341,7 +341,7 @@ namespace hoangstore.Controllers
                     }
 
                     totalOrderPrice +=
-                        variant.Price * item.Quantity;
+                        variant.FinalPrice * item.Quantity;
                 }
 
                 if (totalOrderPrice <= 0)
@@ -377,7 +377,7 @@ namespace hoangstore.Controllers
                         Order = newOrder,
                         ProductVariantId = item.ProductVariantId,
                         Quantity = item.Quantity,
-                        Price = variant.Price
+                        Price = variant.FinalPrice
                     };
 
                     _db.OrderDetails.Add(orderDetail);

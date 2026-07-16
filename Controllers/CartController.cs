@@ -329,7 +329,7 @@ namespace hoangstore.Controllers
             await _db.SaveChangesAsync();
 
             var newSubTotal =
-                variant.Price * newQuantity;
+                variant.FinalPrice * newQuantity;
 
             var totalCartQuantity = await _db.CartItems
                 .Where(item =>

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace hoangstore.Models
 {
-    public class ProductVariant:IAuditable
+    public class ProductVariant : IAuditable
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -27,19 +27,26 @@ namespace hoangstore.Models
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
         public decimal Price { get; set; }
+        [Range(0, 100, ErrorMessage = "Phần trăm giảm giá phải từ 0 đến 100")]
+        [Display(Name = "Giảm giá (%)")]
+        public int DiscountPercent { get; set; }
+
+        [NotMapped]
+        public decimal FinalPrice => Math.Round(Price * (100 - DiscountPercent) / 100, 0);
+
         [Display(Name = "Link ảnh riêng cho màu này")]
         public string? Variant_Image_Url { get; set; }
         //
         //
-        public string CreatedBy { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
         public DateTime? CreatedDate { get; set; }
-        public string ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; } = string.Empty;
         public DateTime? ModifiedDate { get; set; }
-        public string DeletedBy { get; set; }
+        public string DeletedBy { get; set; } = string.Empty;
         public DateTime? DeletedDate { get; set; }
         public bool IsDeleted { get; set; } = false;
 
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
-        public ICollection<OrderDetail> OrderDetails {  get; set; } = new List<OrderDetail>();
+        public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     }
 }

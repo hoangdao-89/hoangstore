@@ -1,21 +1,158 @@
 ﻿@page
 @model LogoutModel
 @{
-    ViewData["Title"] = "Log out";
+    ViewData["Title"] = "Đăng xuất";
 }
 
-<header>
-    <h1>@ViewData["Title"]</h1>
-    @{
-        if (User.Identity?.IsAuthenticated ?? false)
-        {
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
-            </form>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <a href="/" class="auth-logo">HOANG<span>STORE</span></a>
+            <h1 class="auth-title">Đăng xuất</h1>
+            <p class="auth-subtitle">Bạn có chắc muốn đăng xuất khỏi tài khoản?</p>
+        </div>
+
+        <div class="auth-body text-center">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <i class="bi bi-box-arrow-right text-danger d-block mb-3" style="font-size:52px"></i>
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                    <button type="submit" class="btn btn-danger auth-btn w-100 mb-3">Xác nhận đăng xuất</button>
+                    <a href="/" class="btn btn-outline-secondary auth-btn w-100">Quay lại trang chủ</a>
+                </form>
+            }
+            else
+            {
+                <i class="bi bi-check-circle text-success d-block mb-3" style="font-size:52px"></i>
+                <p class="text-muted">Bạn đã đăng xuất thành công.</p>
+                <a href="/" class="btn btn-danger auth-btn w-100">Về trang chủ</a>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-page {
+        min-height: calc(100vh - 140px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 12px;
+        background: #f7f7f7;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 460px;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        box-shadow: 0 8px 24px rgba(0,0,0,.06);
+    }
+
+        .auth-card.wide {
+            max-width: 760px;
         }
-        else
-        {
-            <p>You have successfully logged out of the application.</p>
+
+    .auth-header {
+        padding: 28px 30px 18px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+    }
+
+    .auth-logo {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: .5px;
+        text-decoration: none;
+        color: #111;
+    }
+
+        .auth-logo span {
+            color: #f4b400;
+        }
+
+    .auth-title {
+        margin: 14px 0 4px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .auth-subtitle {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .auth-body {
+        padding: 26px 30px 30px;
+    }
+
+    .auth-label {
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .auth-input {
+        border-radius: 0;
+        min-height: 46px;
+    }
+
+        .auth-input:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 .2rem rgba(220,53,69,.12);
+        }
+
+    .auth-btn {
+        min-height: 46px;
+        border-radius: 0;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .auth-links {
+        margin-top: 18px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+        .auth-links a {
+            color: #dc3545;
+            text-decoration: none;
+        }
+
+            .auth-links a:hover {
+                text-decoration: underline;
+            }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 22px 0;
+        color: #999;
+        font-size: 13px;
+    }
+
+        .auth-divider::before, .auth-divider::after {
+            content: "";
+            height: 1px;
+            background: #e5e5e5;
+            flex: 1;
+        }
+
+    .validation-summary-errors ul {
+        margin-bottom: 0;
+        padding-left: 18px;
+    }
+
+    @@media (max-width: 575.98px) {
+        .auth-header {
+            padding: 24px 20px 16px;
+        }
+
+        .auth-body {
+            padding: 22px 20px 26px;
         }
     }
-</header>
+</style>

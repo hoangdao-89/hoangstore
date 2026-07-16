@@ -1,0 +1,129 @@
+﻿@model hoangstore.Models.ProductVariant
+@using hoangstore.Models
+
+@{
+    ViewData["Title"] = "Sửa biến thể";
+    var product = ViewBag.Product as Product;
+    var currentImage = string.IsNullOrWhiteSpace(Model.Variant_Image_Url)
+        ? product?.Image_Url
+        : Model.Variant_Image_Url;
+
+    if (string.IsNullOrWhiteSpace(currentImage)) currentImage = "/images/no-image.png";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <form asp-area="Admin" asp-controller="Product" asp-action="EditVariant"
+                  asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+
+                <input asp-for="Id" type="hidden" />
+                <input asp-for="ProductId" type="hidden" />
+
+                <div class="card border-0 rounded-0 shadow-sm">
+                    <div class="card-header bg-white p-4">
+                        <h2 class="fw-bold mb-1">Sửa biến thể</h2>
+                        <div class="text-muted">@product?.Product_Name</div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="All" class="alert alert-danger rounded-0"></div>
+                        }
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Size" class="form-label fw-semibold"></label>
+                                <input asp-for="Size" class="form-control rounded-0" maxlength="20" />
+                                <span asp-validation-for="Size" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Color" class="form-label fw-semibold"></label>
+                                <input asp-for="Color" class="form-control rounded-0" maxlength="50" />
+                                <span asp-validation-for="Color" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Price" class="form-label fw-semibold"></label>
+                                <input asp-for="Price" type="number" min="0" step="1000"
+                                       class="form-control rounded-0" />
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                            </div>
+
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="DiscountPercent" class="form-label fw-semibold"></label>
+                                <input asp-for="DiscountPercent" type="number" min="0" max="100" class="form-control rounded-0" />
+                                <span asp-validation-for="DiscountPercent" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Quantity" class="form-label fw-semibold"></label>
+                                <input asp-for="Quantity" type="number" min="0"
+                                       class="form-control rounded-0" />
+                                <span asp-validation-for="Quantity" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Ảnh hiện tại</label>
+                            <div>
+                                <img id="imagePreview" src="@currentImage" class="border"
+                                     alt="@Model.Color"
+                                     style="width:180px;height:180px;object-fit:cover"
+                                     onerror="this.src='/images/no-image.png'" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="variantImageFile" class="form-label fw-semibold">Thay ảnh mới</label>
+
+                            <input type="file" id="variantImageFile" name="variantImageFile"
+                                   class="form-control rounded-0"
+                                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+
+                            <span class="text-danger small field-validation-valid"
+                                  data-valmsg-for="variantImageFile" data-valmsg-replace="true"></span>
+
+                            <div class="form-text">Để trống nếu muốn giữ ảnh hiện tại. Tối đa 5 MB.</div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white p-4">
+                        <button type="submit" class="btn btn-primary rounded-0 px-4">
+                            <i class="bi bi-check-circle me-1"></i>Lưu thay đổi
+                        </button>
+
+                        <a asp-area="Admin" asp-controller="Product" asp-action="Variants"
+                           asp-route-id="@Model.ProductId"
+                           class="btn btn-outline-secondary rounded-0 px-4">
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const input = document.getElementById('variantImageFile');
+        const preview = document.getElementById('imagePreview');
+        let previewUrl;
+
+        input.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = URL.createObjectURL(file);
+            preview.src = previewUrl;
+        });
+    </script>
+}

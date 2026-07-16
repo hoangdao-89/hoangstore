@@ -1,0 +1,305 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject IConfiguration Configuration
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var title = ViewData["Title"]?.ToString() ?? "Admin";
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var rootAdminEmail = Configuration["SystemAdmin:Email"] ?? string.Empty;
+    var currentUser = await UserManager.GetUserAsync(User);
+    var currentEmail = currentUser?.Email ?? User.Identity?.Name ?? string.Empty;
+    var fullName = currentUser == null ? "Admin" : $"{currentUser.LastName} {currentUser.FirstName}".Trim();
+    var isRootAdmin = string.Equals(currentEmail, rootAdminEmail, StringComparison.OrdinalIgnoreCase);
+    string Active(string name) => controller.Equals(name, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - HoangStore Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+            :root {
+                --sidebar-width: 260px;
+                --primary: #0d6efd;
+                --warning: #ffc107;
+            }
+
+            body {
+                background: #f5f6f8;
+                min-height: 100vh;
+            }
+
+            .admin-sidebar {
+                position: fixed;
+                inset: 0 auto 0 0;
+                width: var(--sidebar-width);
+                background: #fff;
+                border-right: 1px solid #e5e7eb;
+                z-index: 1040;
+                overflow-y: auto;
+                transition: transform .25s;
+            }
+
+            .admin-brand {
+                height: 72px;
+                display: flex;
+                align-items: center;
+                padding: 0 24px;
+                border-bottom: 1px solid #e5e7eb;
+                color: #111;
+                text-decoration: none;
+                font-size: 21px;
+                font-weight: 800;
+                letter-spacing: .5px;
+            }
+
+                .admin-brand .store {
+                    color: var(--warning);
+                }
+
+            .sidebar-title {
+                padding: 22px 24px 8px;
+                color: #6b7280;
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .sidebar-link {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin: 4px 12px;
+                padding: 12px 14px;
+                color: #374151;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: .2s;
+            }
+
+                .sidebar-link:hover {
+                    background: #e7f1ff;
+                    color: var(--primary);
+                }
+
+                .sidebar-link.active {
+                    background: var(--primary);
+                    color: #fff;
+                }
+
+                .sidebar-link i {
+                    width: 22px;
+                    text-align: center;
+                    font-size: 18px;
+                }
+
+            .logout-button {
+                width: calc(100% - 24px);
+                border: 0;
+                background: transparent;
+                text-align: left;
+            }
+
+                .logout-button:hover {
+                    background: #fee2e2;
+                    color: #dc3545;
+                }
+
+            .admin-main {
+                margin-left: var(--sidebar-width);
+                min-height: 100vh;
+            }
+
+            .admin-header {
+                height: 72px;
+                background: #fff;
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 28px;
+                position: sticky;
+                top: 0;
+                z-index: 1030;
+            }
+
+            .admin-content {
+                padding: 0 24px 30px;
+            }
+
+            .admin-user {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .admin-avatar {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #212529;
+                color: #fff;
+                display: grid;
+                place-items: center;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, .45);
+                z-index: 1035;
+            }
+
+            #sidebarToggle {
+                display: none;
+            }
+
+            @@media (max-width: 991.98px) {
+                .admin-sidebar {
+                    transform: translateX(-100%);
+                }
+
+                    .admin-sidebar.show {
+                        transform: translateX(0);
+                    }
+
+                .admin-main {
+                    margin-left: 0;
+                }
+
+                .sidebar-overlay.show {
+                    display: block;
+                }
+
+                #sidebarToggle {
+                    display: inline-flex;
+                }
+
+                .admin-header {
+                    padding: 0 16px;
+                }
+
+                .admin-content {
+                    padding: 0 12px 24px;
+                }
+
+                .admin-user-info {
+                    display: none;
+                }
+            }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <aside id="adminSidebar" class="admin-sidebar">
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="admin-brand">
+            <span>HOANG</span><span class="store">STORE</span>
+        </a>
+
+        <div class="sidebar-title">Tổng quan</div>
+
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="sidebar-link @Active("Dashboard")">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="sidebar-title">Quản lý</div>
+
+        <a href="@Url.Action("Index", "Category", new { area = "Admin" })" class="sidebar-link @Active("Category")">
+            <i class="bi bi-grid"></i>
+            <span>Quản lý danh mục</span>
+        </a>
+
+        <a href="@Url.Action("Index", "Product", new { area = "Admin" })" class="sidebar-link @Active("Product")">
+            <i class="bi bi-box-seam"></i>
+            <span>Quản lý sản phẩm</span>
+        </a>
+
+        <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="sidebar-link @Active("Order")">
+            <i class="bi bi-receipt"></i>
+            <span>Quản lý đơn hàng</span>
+        </a>
+
+        @if (isRootAdmin)
+        {
+            <a href="@Url.Action("Index", "User", new { area = "Admin" })" class="sidebar-link @Active("User")">
+                <i class="bi bi-people"></i>
+                <span>Quản lý người dùng</span>
+            </a>
+        }
+
+        <div class="sidebar-title">Hệ thống</div>
+
+        <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="sidebar-link @Active("Dashboard")">
+            <i class="bi bi-bar-chart"></i>
+            <span>Thống kê</span>
+        </a>
+
+        <a href="@Url.Action("Index", "Home", new { area = "" })" class="sidebar-link">
+            <i class="bi bi-shop"></i>
+            <span>Về trang bán hàng</span>
+        </a>
+
+        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
+            <button type="submit" class="sidebar-link logout-button">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Đăng xuất</span>
+            </button>
+        </form>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="d-flex align-items-center gap-3">
+                <button id="sidebarToggle" type="button" class="btn btn-outline-dark rounded-0">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <div class="fw-bold">@title</div>
+            </div>
+
+            <div class="admin-user">
+                <div class="admin-avatar"><i class="bi bi-person-fill"></i></div>
+                <div class="admin-user-info">
+                    <div class="fw-semibold">@fullName</div>
+                    <div class="text-muted small">@currentEmail</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            @RenderBody()
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        document.getElementById('sidebarToggle')?.addEventListener('click', function () {
+        sidebar.classList.toggle('show');
+        overlay.classList.toggle('show');
+        });
+
+        overlay.addEventListener('click', function () {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

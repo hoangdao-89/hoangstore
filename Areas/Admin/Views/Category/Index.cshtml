@@ -1,92 +1,277 @@
 ﻿@model IEnumerable<hoangstore.Models.Category>
 
-<div class="contain p-3">
-    <div class="row pt-3">
-        <div class="col-6">
-            <h2 style="color:purple">
-                Danh sách Danh mục
-            </h2>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    var categories = Model?.ToList() ?? new List<hoangstore.Models.Category>();
+    var searchTerm = ViewBag.SearchTerm as string ?? string.Empty;
+    var isSearching = !string.IsNullOrWhiteSpace(searchTerm);
+}
+
+<div class="container-fluid py-4">
+    @Html.AntiForgeryToken()
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Quản lý danh mục</h2>
+            <p class="text-muted mb-0">Quản lý danh mục và thứ tự hiển thị sản phẩm.</p>
         </div>
-        <div class="col-6 text-end">
-            <a asp-area="Admin" asp-controller="Category" asp-action="Create" class="btn btn-primary" style="background-color: purple;border:none">
-                <i class="bi bi-plus-circle"></i>Thêm mới danh mục
-            </a>
+
+        <a asp-area="Admin" asp-controller="Category" asp-action="Create"
+           class="btn btn-primary rounded-0 px-4">
+            <i class="bi bi-plus-circle me-1"></i> Thêm mới danh mục
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show rounded-0">
+            <i class="bi bi-check-circle me-1"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
+    }
+
+    <div class="card border-0 rounded-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <form asp-area="Admin" asp-controller="Category" asp-action="Index" method="get">
+                <div class="row g-3">
+                    <div class="col-md-8 col-lg-6">
+                        <label for="searchTerm" class="form-label fw-semibold">Tìm theo tên danh mục</label>
+
+                        <div class="input-group">
+                            <span class="input-group-text bg-white rounded-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input type="search" id="searchTerm" name="searchTerm" value="@searchTerm"
+                                   class="form-control rounded-0" maxlength="100" autocomplete="off"
+                                   placeholder="Nhập tên danh mục..." />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-lg-6 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-dark rounded-0 px-4">
+                            <i class="bi bi-search me-1"></i> Tìm kiếm
+                        </button>
+
+                        @if (isSearching)
+                        {
+                            <a asp-area="Admin" asp-controller="Category" asp-action="Index"
+                               class="btn btn-outline-secondary rounded-0 px-4">
+                                <i class="bi bi-x-lg me-1"></i> Xóa lọc
+                            </a>
+                        }
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-    <table class="table table-bordered mt-3 text-center">
-        <thead>
-            <tr>
-                <th>STT</th>
-                <th>Tên danh mục</th>
-                <th>Mô tả</th>
-                <th>Vị trí</th>
-                <th>Hoạt động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @{
-                var i = 1;
-            }
-            @foreach(var item in Model)
-            {
-                <tr>
-                    <td>@i</td>
-                    <td>
-                        @item.Category_Name
-                    </td>
-                    <td>@item.Description</td>
-                    <td>@item.DisplayOrder</td>
-                    <td>
-                        @if(@item.IsActive){
-                            <i class="bi bi-check-lg text-success" title="Đang hoạt động"></i>
-                        }
-                        else{
-                            <i class="bi bi-x-lg text-danger fs-5" title="Ngưng hoạt động"></i>
-                        }
-                    </td>
-                    <td>
-                        <div class="d-flex gap-2">
-                            <a asp-area="Admin" asp-controller="Category" asp-action="Edit" asp-route-id="@item.CategoryId" class=" btn btn-sm btn-outline-primary" ">Sửa</a>
-                            <button onclick="DeleteCategory('/Admin/Category/Delete/@item.CategoryId', this)" class="btn btn-sm btn-outline-danger">Xóa</button>
+
+    <div class="card border-0 rounded-0 shadow-sm">
+        <div class="card-header bg-white p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h5 class="fw-bold mb-0">
+                        @(isSearching ? "Kết quả tìm kiếm" : "Danh sách danh mục")
+                    </h5>
+
+                    @if (isSearching)
+                    {
+                        <div class="text-muted small mt-1">
+                            Từ khóa: <strong class="text-dark">“@searchTerm”</strong>
                         </div>
-                    </td>
-                </tr>
-                i++;
+                    }
+                </div>
+
+                <span class="badge bg-light text-dark border rounded-0">
+                    Tổng số: @categories.Count
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            @if (!categories.Any())
+            {
+                <div class="text-center py-5 px-3">
+                    <i class="bi bi-search text-muted" style="font-size:3.5rem"></i>
+
+                    <h5 class="fw-bold mt-3">
+                        @(isSearching ? "Không tìm thấy danh mục" : "Chưa có danh mục")
+                    </h5>
+
+                    <p class="text-muted mb-4">
+                        @if (isSearching)
+                        {
+                            <span>Không có danh mục phù hợp với từ khóa <strong>“@searchTerm”</strong>.</span>
+                        }
+                        else
+                        {
+                            <span>Hãy tạo danh mục đầu tiên để quản lý sản phẩm.</span>
+                        }
+                    </p>
+
+                    @if (isSearching)
+                    {
+                        <a asp-area="Admin" asp-controller="Category" asp-action="Index"
+                           class="btn btn-outline-dark rounded-0 px-4">
+                            Xem tất cả danh mục
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="Admin" asp-controller="Category" asp-action="Create"
+                           class="btn btn-primary rounded-0 px-4">
+                            <i class="bi bi-plus-circle me-1"></i> Thêm danh mục
+                        </a>
+                    }
+                </div>
             }
-        </tbody>
-    </table>
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width:70px">STT</th>
+                                <th>Tên danh mục</th>
+                                <th>Mô tả</th>
+                                <th class="text-center" style="width:120px">Thứ tự</th>
+                                <th class="text-center" style="width:150px">Trạng thái</th>
+                                <th class="text-center" style="width:180px">Thao tác</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @{
+                                var index = 1;
+                            }
+
+                            @foreach (var item in categories)
+                            {
+                                <tr id="category-row-@item.CategoryId">
+                                    <td class="text-center">@index</td>
+
+                                    <td>
+                                        <div class="fw-semibold">@item.Category_Name</div>
+                                        <div class="text-muted small">Mã: #@item.CategoryId</div>
+                                    </td>
+
+                                    <td>
+                                        @if (string.IsNullOrWhiteSpace(item.Description))
+                                        {
+                                            <span class="text-muted">Chưa có mô tả</span>
+                                        }
+                                        else
+                                        {
+                                            @item.Description
+                                        }
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border rounded-0">
+                                            @item.DisplayOrder
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success rounded-pill px-3 py-2">
+                                                <i class="bi bi-check-circle me-1"></i> Hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                <i class="bi bi-pause-circle me-1"></i> Tạm ẩn
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a asp-area="Admin" asp-controller="Category" asp-action="Edit"
+                                               asp-route-id="@item.CategoryId"
+                                               class="btn btn-sm btn-outline-primary rounded-0">
+                                                <i class="bi bi-pencil-square me-1"></i> Sửa
+                                            </a>
+
+                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-0"
+                                                    onclick="deleteCategory(@item.CategoryId, this)">
+                                                <i class="bi bi-trash me-1"></i> Xóa
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                index++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
 </div>
 
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-@section Scripts{
     <script>
-        function DeleteCategory(url, button){
-            Swal.fire({
-                title: 'Bạn có chắc muốn xóa không ?',
-                icon: 'warning',
-                showCancelButton: true,
-                cancelButtonColor:'purple',
-                confirmButtonColor:'#d33',
-                confirmButtonText:'Xác nhận',
-                cancelButtonText:'Quay lại'
-            }).then((result) =>{
-                if(result.isConfirmed){
-                    $.ajax({
-                        url: url,
-                        type: 'DELETE',
-                        success: function (data) {
-                            if(data.success){
-                                $(button).closest('tr').remove();
-                            }
-                            else{
-                                Swal.fire('Lỗi!','Không thể xóa danh mục này','error');
-                            }
-                        },
-                        error: function(){
-                            Swal.fire('Lỗi','Lỗi hệ thống','error');
-                        }
-                    });
-                }
-            })}
+        setTimeout(() => {
+        const alertElement = document.getElementById('successAlert');
+        if (alertElement) bootstrap.Alert.getOrCreateInstance(alertElement).close();
+        }, 3000);
+
+        function deleteCategory(categoryId, button) {
+        Swal.fire({
+        title: 'Xóa danh mục?',
+        text: 'Danh mục sẽ được ẩn khỏi hệ thống.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Xác nhận xóa',
+        cancelButtonText: 'Quay lại',
+        reverseButtons: true
+        }).then(result => {
+        if (!result.isConfirmed) return;
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const originalContent = button.innerHTML;
+
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xóa';
+
+        $.ajax({
+        url: '/Admin/Category/Delete/' + categoryId,
+        type: 'DELETE',
+        headers: { 'RequestVerificationToken': token },
+
+        success: function (data) {
+        if (!data?.success) {
+        button.disabled = false;
+        button.innerHTML = originalContent;
+        Swal.fire('Không thể xóa', data?.message || 'Không thể xóa danh mục này.', 'warning');
+        return;
+        }
+
+        Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: data.message,
+        timer: 1200,
+        showConfirmButton: false
+        }).then(() => window.location.reload());
+        },
+
+        error: function () {
+        button.disabled = false;
+        button.innerHTML = originalContent;
+        Swal.fire('Lỗi', 'Có lỗi hệ thống xảy ra.', 'error');
+        }
+        });
+        });
+        }
     </script>
 }

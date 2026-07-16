@@ -56,7 +56,7 @@
                             </a>
 
                             <span class="text-white mx-1">
-                                ||
+                                |
                             </span>
 
                             <form id="logoutForm"
@@ -154,7 +154,7 @@
                                 <li>
                                     <a class="dropdown-item
                                               dropdown-item-nam"
-                                       href="#">
+                                       href="@Url.Action("Index", "Home", new { area = "", categoryName = "Áo", gender = hoangstore.Models.Enums.ProductGender.Male })">
 
                                         Áo nam
                                     </a>
@@ -163,7 +163,7 @@
                                 <li>
                                     <a class="dropdown-item
                                               dropdown-item-nam"
-                                       href="#">
+                                       href="@Url.Action("Index", "Home", new { area = "", categoryName = "Quần", gender = hoangstore.Models.Enums.ProductGender.Male })">
 
                                         Quần nam
                                     </a>
@@ -172,7 +172,7 @@
                                 <li>
                                     <a class="dropdown-item
                                               dropdown-item-nam"
-                                       href="#">
+                                       href="@Url.Action("Index", "Home", new { area = "", categoryName = "Phụ kiện", gender = hoangstore.Models.Enums.ProductGender.Male })">
 
                                         Phụ kiện
                                     </a>
@@ -199,7 +199,7 @@
                                 <li>
                                     <a class="dropdown-item
                                               dropdown-item-nu"
-                                       href="#">
+                                       href="@Url.Action("Index", "Home", new { area = "", categoryName = "Áo", gender = hoangstore.Models.Enums.ProductGender.Female })">
 
                                         Áo nữ
                                     </a>
@@ -208,7 +208,7 @@
                                 <li>
                                     <a class="dropdown-item
                                               dropdown-item-nu"
-                                       href="#">
+                                       href="@Url.Action("Index", "Home", new { area = "", categoryName = "Quần", gender = hoangstore.Models.Enums.ProductGender.Female })">
 
                                         Quần nữ
                                     </a>
@@ -217,7 +217,7 @@
                                 <li>
                                     <a class="dropdown-item
                                               dropdown-item-nu"
-                                       href="#">
+                                       href="@Url.Action("Index", "Home", new { area = "", categoryName = "Váy", gender = hoangstore.Models.Enums.ProductGender.Female })">
 
                                         Váy
                                     </a>
@@ -226,7 +226,7 @@
                                 <li>
                                     <a class="dropdown-item
                                               dropdown-item-nu"
-                                       href="#">
+                                       href="@Url.Action("Index", "Home", new { area = "", categoryName = "Phụ kiện", gender = hoangstore.Models.Enums.ProductGender.Female })">
 
                                         Phụ kiện
                                     </a>
@@ -236,7 +236,7 @@
 
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="#">
+                               href="@Url.Action("Index", "Home", new { area = "", collection = "new" })">
 
                                 Mới
                             </a>
@@ -244,7 +244,7 @@
 
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="#">
+                               href="@Url.Action("Index", "Home", new { area = "", collection = "featured" })">
 
                                 Nổi bật
                             </a>
@@ -252,7 +252,7 @@
 
                         <li class="nav-item">
                             <a class="nav-link text-danger"
-                               href="#">
+                               href="@Url.Action("Index", "Home", new { area = "", collection = "sale" })">
 
                                 Sale
                             </a>

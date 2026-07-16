@@ -1,0 +1,309 @@
+﻿@model IEnumerable<hoangstore.Areas.Admin.ViewModels.UserListViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+
+    var users = Model?.ToList()
+        ?? new List<hoangstore.Areas.Admin.ViewModels.UserListViewModel>();
+
+    var roles = ViewBag.Roles as List<string> ?? new List<string>();
+    var searchTerm = ViewBag.SearchTerm as string ?? string.Empty;
+    var rootAdminEmail = ViewBag.RootAdminEmail as string ?? string.Empty;
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalItems = (int)(ViewBag.TotalItems ?? 0);
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Quản lý tài khoản</h2>
+        <p class="text-muted mb-0">Chỉ Admin gốc được phân quyền và khóa tài khoản.</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show rounded-0">
+            <i class="bi bi-check-circle me-1"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div id="errorAlert" class="alert alert-danger alert-dismissible fade show rounded-0">
+            <i class="bi bi-exclamation-circle me-1"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
+    }
+
+    <div class="card border-0 rounded-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <form asp-area="Admin" asp-controller="User" asp-action="Index" method="get">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label for="searchTerm" class="form-label fw-semibold">Tìm kiếm tài khoản</label>
+                        <input type="search" id="searchTerm" name="searchTerm" value="@searchTerm"
+                               class="form-control rounded-0"
+                               placeholder="Nhập họ tên, email hoặc số điện thoại..." />
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-dark rounded-0">
+                            <i class="bi bi-search me-1"></i>Tìm kiếm
+                        </button>
+
+                        @if (!string.IsNullOrWhiteSpace(searchTerm))
+                        {
+                            <a asp-area="Admin" asp-controller="User" asp-action="Index"
+                               class="btn btn-outline-secondary rounded-0">
+                                Xóa lọc
+                            </a>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 rounded-0 shadow-sm">
+        <div class="card-header bg-white p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Danh sách tài khoản</h5>
+            <span class="badge bg-light text-dark border rounded-0">Tổng số: @totalItems</span>
+        </div>
+
+        <div class="card-body p-0">
+            @if (!users.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-people text-muted" style="font-size:3rem"></i>
+                    <h5 class="mt-3">Không tìm thấy tài khoản</h5>
+                    <p class="text-muted mb-0">Không có tài khoản phù hợp với từ khóa tìm kiếm.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width:70px">STT</th>
+                                <th>Người dùng</th>
+                                <th>Liên hệ</th>
+                                <th>Địa chỉ</th>
+                                <th class="text-center">Vai trò</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th class="text-center" style="min-width:300px">Thao tác</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @{
+                                var index = (currentPage - 1) * 10 + 1;
+                            }
+
+                            @foreach (var item in users)
+                            {
+                                var user = item.User;
+                                var isRootAdmin = string.Equals(
+                                    user.Email,
+                                    rootAdminEmail,
+                                    StringComparison.OrdinalIgnoreCase);
+
+                                <tr>
+                                    <td class="text-center">@index</td>
+
+                                    <td>
+                                        <div class="fw-semibold">
+                                            @user.LastName @user.FirstName
+
+                                            @if (isRootAdmin)
+                                            {
+                                                <span class="badge bg-info text-dark ms-1">Admin gốc</span>
+                                            }
+                                        </div>
+
+                                        <div class="text-muted small">Mã: @user.Id</div>
+                                    </td>
+
+                                    <td>
+                                        <div>@user.Email</div>
+                                        <div class="text-muted small">@user.PhoneNumber</div>
+                                    </td>
+
+                                    <td style="max-width:220px">@user.Address</td>
+
+                                    <td class="text-center">
+                                        @if (item.Role == "Admin")
+                                        {
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">Admin</span>
+                                        }
+                                        else if (item.Role == "Khách hàng")
+                                        {
+                                            <span class="badge bg-primary rounded-pill px-3 py-2">Khách hàng</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                Chưa phân quyền
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="text-center">
+                                        @if (item.IsLocked)
+                                        {
+                                            <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                <i class="bi bi-lock-fill me-1"></i>Đã khóa
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success rounded-pill px-3 py-2">
+                                                <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (isRootAdmin)
+                                        {
+                                            <div class="text-center text-muted small">
+                                                Không thể thao tác với tài khoản Admin gốc
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                                <form asp-area="Admin" asp-controller="User" asp-action="ChangeRole"
+                                                      method="post" class="d-flex gap-1">
+                                                    <input type="hidden" name="userId" value="@user.Id" />
+                                                    <input type="hidden" name="searchTerm" value="@searchTerm" />
+                                                    <input type="hidden" name="page" value="@currentPage" />
+
+                                                    <select name="role" class="form-select form-select-sm rounded-0">
+                                                        @foreach (var role in roles)
+                                                        {
+                                                            if (role == item.Role)
+                                                            {
+                                                                <option value="@role" selected>@role</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@role">@role</option>
+                                                            }
+                                                        }
+                                                    </select>
+
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-primary rounded-0">
+                                                        Lưu
+                                                    </button>
+                                                </form>
+
+                                                <form asp-area="Admin" asp-controller="User" asp-action="ToggleLock"
+                                                      method="post"
+                                                      onsubmit="return confirmLock(event, this, @item.IsLocked.ToString().ToLower())">
+                                                    <input type="hidden" name="userId" value="@user.Id" />
+                                                    <input type="hidden" name="searchTerm" value="@searchTerm" />
+                                                    <input type="hidden" name="page" value="@currentPage" />
+
+                                                    @if (item.IsLocked)
+                                                    {
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-outline-success rounded-0">
+                                                            <i class="bi bi-unlock me-1"></i>Mở
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-outline-danger rounded-0">
+                                                            <i class="bi bi-lock me-1"></i>Khóa
+                                                        </button>
+                                                    }
+                                                </form>
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+
+                                index++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <nav class="mt-4" aria-label="Phân trang tài khoản">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link rounded-0"
+                       asp-area="Admin" asp-controller="User" asp-action="Index"
+                       asp-route-page="@(currentPage - 1)"
+                       asp-route-searchTerm="@searchTerm">
+                        Trước
+                    </a>
+                </li>
+
+                @for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++)
+                {
+                    <li class="page-item @(pageNumber == currentPage ? "active" : "")">
+                        <a class="page-link rounded-0"
+                           asp-area="Admin" asp-controller="User" asp-action="Index"
+                           asp-route-page="@pageNumber"
+                           asp-route-searchTerm="@searchTerm">
+                            @pageNumber
+                        </a>
+                    </li>
+                }
+
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link rounded-0"
+                       asp-area="Admin" asp-controller="User" asp-action="Index"
+                       asp-route-page="@(currentPage + 1)"
+                       asp-route-searchTerm="@searchTerm">
+                        Sau
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        setTimeout(() => {
+        ['successAlert', 'errorAlert'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) bootstrap.Alert.getOrCreateInstance(element).close();
+        });
+        }, 3000);
+
+        function confirmLock(event, form, isLocked) {
+        event.preventDefault();
+
+        Swal.fire({
+        title: isLocked ? 'Mở khóa tài khoản?' : 'Khóa tài khoản?',
+        text: isLocked
+        ? 'Người dùng sẽ có thể đăng nhập trở lại.'
+        : 'Người dùng sẽ không thể đăng nhập vào hệ thống.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: isLocked ? 'Mở khóa' : 'Khóa tài khoản',
+        cancelButtonText: 'Quay lại',
+        confirmButtonColor: isLocked ? '#198754' : '#dc3545',
+        cancelButtonColor: '#6c757d'
+        }).then(result => {
+        if (result.isConfirmed) form.submit();
+        });
+
+        return false;
+        }
+    </script>
+}

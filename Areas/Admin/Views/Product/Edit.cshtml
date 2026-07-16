@@ -1,62 +1,127 @@
 ﻿@model hoangstore.Models.Product
+@using hoangstore.Models.Enums
 
-<div class="container mt-3">
-    <form method="post">
-        <input type="hidden" asp-for="ProductId" />
+@{
+    ViewData["Title"] = "Sửa sản phẩm";
+    var currentImage = string.IsNullOrWhiteSpace(Model.Image_Url)
+        ? "/images/no-image.png"
+        : Model.Image_Url;
+}
 
-        <div class="border p-3 shadow-sm">
-            <h2 style="color:purple">Sửa sản phẩm</h2>
-            <hr />
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <form asp-area="Admin" asp-controller="Product" asp-action="Edit"
+                  asp-route-id="@Model.ProductId" method="post" enctype="multipart/form-data">
 
-            <div class="mb-3">
-                <label class="form-label">Tên sản phẩm</label>
-                <input asp-for="Product_Name" class="form-control" />
-                <span asp-validation-for="Product_Name" class="text-danger"></span>
-            </div>
+                <input asp-for="ProductId" type="hidden" />
 
-            <div class="mb-3">
-                <label class="form-label">Link ảnh sản phẩm</label>
-                <input asp-for="Image_Url" class="form-control" />
-                <span asp-validation-for="Image_Url" class="text-danger"></span>
-            </div>
+                <div class="card border-0 rounded-0 shadow-sm">
+                    <div class="card-header bg-white p-4">
+                        <h2 class="fw-bold mb-0">
+                            <i class="bi bi-pencil-square text-primary me-2"></i>Sửa sản phẩm
+                        </h2>
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label">Mô tả</label>
-                <textarea asp-for="Product_Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Product_Description" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3 form-check d-flex align-items-center gap-2">
-                <input type="checkbox" asp-for="IsFeatured" class="form-check-input" id="isFeaturedCheck" style="cursor: pointer;" />
-                <label for="isFeaturedCheck" class="form-check-label" style="cursor: pointer; user-select: none;">Sản phẩm nổi bật (Hiển thị trang chủ)</label>
-                <span asp-validation-for="IsFeatured" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Danh mục</label>
-                <select asp-for="CategoryId" class="form-select">
-                    <option disabled>--Chọn danh mục--</option>
-                    @if (ViewBag.CategoryList != null)
-                    {
-                        foreach (var item in ViewBag.CategoryList)
+                    <div class="card-body p-4">
+                        @if (!ViewData.ModelState.IsValid)
                         {
-                            <option value="@item.CatId">@item.CatName</option>
+                            <div asp-validation-summary="All" class="alert alert-danger rounded-0"></div>
                         }
-                    }
-                </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
 
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary" style="background-color: purple; border:none; width:150px;">Lưu lại</button>
-                <a asp-action="Index" class="btn btn-secondary" style="width:150px">Quay lại</a>
-            </div>
+                        <div class="mb-3">
+                            <label asp-for="Product_Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Product_Name" class="form-control rounded-0"
+                                   maxlength="100" autocomplete="off" />
+                            <span asp-validation-for="Product_Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Ảnh hiện tại</label>
+                            <div>
+                                <img id="imagePreview" src="@currentImage" class="border"
+                                     alt="@Model.Product_Name"
+                                     style="width:180px;height:180px;object-fit:cover"
+                                     onerror="this.src='/images/no-image.png'" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="imageFile" class="form-label fw-semibold">Thay ảnh mới</label>
+                            <input type="file" id="imageFile" name="imageFile"
+                                   class="form-control rounded-0"
+                                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+
+                            <span class="text-danger small field-validation-valid"
+                                  data-valmsg-for="imageFile" data-valmsg-replace="true"></span>
+
+                            <div class="form-text">
+                                Để trống nếu muốn giữ ảnh hiện tại. Dung lượng tối đa 5 MB.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Product_Description" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Product_Description" class="form-control rounded-0"
+                                      rows="4" maxlength="200"></textarea>
+                            <span asp-validation-for="Product_Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label fw-semibold"></label>
+                            <select asp-for="CategoryId" asp-items="ViewBag.CategoryList"
+                                    class="form-select rounded-0">
+                                <option value="">-- Chọn danh mục --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Gender" class="form-label fw-semibold"></label>
+                            <select asp-for="Gender" asp-items="Html.GetEnumSelectList<ProductGender>()" class="form-select rounded-0"></select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="IsFeatured" class="form-check-input" />
+                            <label asp-for="IsFeatured" class="form-check-label">
+                                Sản phẩm nổi bật, hiển thị ở trang chủ
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white p-4">
+                        <button type="submit" class="btn btn-primary rounded-0 px-4">
+                            <i class="bi bi-check-circle me-1"></i>Lưu thay đổi
+                        </button>
+
+                        <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+                           class="btn btn-outline-secondary rounded-0 px-4">
+                            <i class="bi bi-arrow-left me-1"></i>Quay lại
+                        </a>
+                    </div>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
-    @{
-        <partial name="_ValidationScriptsPartial" />
-    }
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const imageInput = document.getElementById('imageFile');
+        const imagePreview = document.getElementById('imagePreview');
+        let previewUrl;
+
+        imageInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+            previewUrl = URL.createObjectURL(file);
+            imagePreview.src = previewUrl;
+        });
+    </script>
 }

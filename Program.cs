@@ -3,7 +3,7 @@ using hoangstore.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using hoangstore.Models.Services;
-
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 //dang ky chuoi ket noi vao he thong
@@ -22,13 +22,16 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddHostedService<
     PendingVnPayOrderCleanupService>();
+builder.Services.AddHostedService<SoftDeleteCleanupService>();
+QuestPDF.Settings.License = LicenseType.Community;
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+   
     app.UseHsts();
 }
 
@@ -52,19 +55,12 @@ app.MapRazorPages();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
+
+    await SystemSeeder.SeedSystemData(services);
+
+    if (builder.Configuration.GetValue<bool>("SeedDemoData"))
     {
-     
-        SystemSeeder.SeedSystemData(services).Wait();
-        if (app.Environment.IsDevelopment())
-        {
-            MockSeeder.SeedTestData(services);
-        }
-    }
-    catch(Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Có lỗi xảy ra trong quá trình Seed dữ liệu.");
+        await MockSeeder.SeedMockData(services);
     }
 }
 app.Run();

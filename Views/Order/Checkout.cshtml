@@ -178,7 +178,7 @@
                                 product?.Product_Name
                                 ?? "Sản phẩm không xác định";
 
-                            var price = variant?.Price ?? 0;
+                            var price = variant?.FinalPrice ?? 0;
                             var subtotal = price * item.Quantity;
 
                             <div class="d-flex align-items-center justify-content-between

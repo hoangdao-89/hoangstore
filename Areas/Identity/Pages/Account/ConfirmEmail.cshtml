@@ -1,8 +1,96 @@
 ﻿@page
 @model ConfirmEmailModel
+
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Xác nhận email";
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <a href="/" class="auth-logo">HOANG<span>STORE</span></a>
+            <h1 class="auth-title">Xác nhận email</h1>
+            <p class="auth-subtitle">Hoàn tất xác nhận tài khoản HoangStore</p>
+        </div>
+
+        <div class="auth-body text-center">
+            <i class="bi bi-envelope-check text-success d-block mb-3" style="font-size:52px"></i>
+            <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+            <div class="mt-4">
+                <a asp-page="./Login" class="btn btn-danger auth-btn w-100">Đăng nhập</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-page {
+        min-height: calc(100vh - 140px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 12px;
+        background: #f7f7f7;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 460px;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        box-shadow: 0 8px 24px rgba(0,0,0,.06);
+    }
+
+    .auth-header {
+        padding: 28px 30px 18px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+    }
+
+    .auth-logo {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: .5px;
+        text-decoration: none;
+        color: #111;
+    }
+
+        .auth-logo span {
+            color: #f4b400;
+        }
+
+    .auth-title {
+        margin: 14px 0 4px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .auth-subtitle {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .auth-body {
+        padding: 26px 30px 30px;
+    }
+
+    .auth-btn {
+        min-height: 46px;
+        border-radius: 0;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    @@media (max-width: 575.98px) {
+        .auth-header {
+            padding: 24px 20px 16px;
+        }
+
+        .auth-body {
+            padding: 22px 20px 26px;
+        }
+    }
+</style>

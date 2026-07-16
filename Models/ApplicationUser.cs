@@ -9,20 +9,20 @@ namespace hoangstore.Models
 
         [Required(ErrorMessage = "Họ không được để trống"), StringLength(50)]
         [Display(Name = "Họ")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
         [Required(ErrorMessage = "Tên không được để trống"), StringLength(50)]
         [Display(Name ="Tên")]
-        public string FirstName {  get; set; }
+        public string FirstName {  get; set; } = string.Empty;
         [Required(ErrorMessage = "Địa chỉ không được để trống"), StringLength(256)]
         [Display(Name ="Địa chỉ")]
-        public string Address {  get; set; }
+        public string Address {  get; set; } = string.Empty;
         [Phone]
         [Required(ErrorMessage = "Số điện thoại không được để trống")]
         [Display(Name = "Số điện thoại")]
-        public override string PhoneNumber { get; set; }
+        public override string PhoneNumber { get; set; } = string.Empty;
         [Required(ErrorMessage = "Email không được để trống")]
         [EmailAddress]
         [Display(Name = "Email")]
-        public override string Email { get ; set ; }
+        public override string Email { get ; set ; } = string.Empty;
     }
 }

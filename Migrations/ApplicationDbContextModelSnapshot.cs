@@ -442,6 +442,9 @@ namespace hoangstore.Migrations
                     b.Property<DateTime?>("DeletedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
                     b.Property<string>("Image_Url")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -502,6 +505,9 @@ namespace hoangstore.Migrations
 
                     b.Property<DateTime?>("DeletedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("DiscountPercent")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");

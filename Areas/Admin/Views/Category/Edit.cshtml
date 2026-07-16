@@ -1,39 +1,142 @@
 ﻿@model hoangstore.Models.Category
 
-<div class="container mt-4">
-    <form method="post">
-        <input type="hidden" asp-for="CategoryId" />
-        <div class="border p-3 shadow-sm">
-            <h2 style="color:purple">
-                Sửa danh mục
-            </h2>
-            <hr />
-            <div class="mb-3">
-                <label class="form-label">Tên danh mục</label>
-                <input asp-for="Category_Name" class="form-control" />
-                <span asp-validation-for="Category_Name" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Description" class="form-label">Mô tả</label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Vị trí</label>
-                <input class="form-control" asp-for="DisplayOrder" />
-                <span asp-validation-for="DisplayOrder" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <div class="form-check">
-                    <label class="form-label" for="forIsActive">Hoạt động</label>
-                    <input asp-for="IsActive" type="checkbox" id="forIsActive" class="form-check-input" />
-                    <span asp-validation-for="IsActive" class="text-danger"></span>
+@{
+    ViewData["Title"] = "Sửa danh mục";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <form asp-area="Admin"
+                  asp-controller="Category"
+                  asp-action="Edit"
+                  asp-route-id="@Model.CategoryId"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="CategoryId"
+                       type="hidden" />
+
+                <div class="card border-0 rounded-0 shadow-sm">
+                    <div class="card-header bg-white p-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-pencil-square fs-4 text-primary"></i>
+
+                            <div>
+                                <h2 class="fw-bold mb-0">
+                                    Sửa danh mục
+                                </h2>
+
+                                <div class="text-muted small mt-1">
+                                    Mã danh mục: #@Model.CategoryId
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="alert alert-danger rounded-0"
+                             role="alert">
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Category_Name"
+                                   class="form-label fw-semibold">
+                            </label>
+
+                            <input asp-for="Category_Name"
+                                   class="form-control rounded-0"
+                                   maxlength="100"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="Category_Name"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description"
+                                   class="form-label fw-semibold">
+                            </label>
+
+                            <textarea asp-for="Description"
+                                      class="form-control rounded-0"
+                                      rows="4"
+                                      maxlength="200">
+                            </textarea>
+
+                            <span asp-validation-for="Description"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DisplayOrder"
+                                   class="form-label fw-semibold">
+                            </label>
+
+                            <input asp-for="DisplayOrder"
+                                   type="number"
+                                   min="1"
+                                   max="100"
+                                   class="form-control rounded-0" />
+
+                            <span asp-validation-for="DisplayOrder"
+                                  class="text-danger small">
+                            </span>
+
+                            <div class="form-text">
+                                Giá trị hợp lệ từ 1 đến 100.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsActive"
+                                       class="form-check-input"
+                                       type="checkbox" />
+
+                                <label asp-for="IsActive"
+                                       class="form-check-label fw-semibold">
+                                </label>
+                            </div>
+
+                            <span asp-validation-for="IsActive"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white p-4">
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <button type="submit"
+                                    class="btn btn-primary rounded-0 px-4">
+
+                                <i class="bi bi-check-circle me-1"></i>
+                                Lưu thay đổi
+                            </button>
+
+                            <a asp-area="Admin"
+                               asp-controller="Category"
+                               asp-action="Index"
+                               class="btn btn-outline-secondary rounded-0 px-4">
+
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Quay lại
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary" style="background-color:purple;border:none">Lưu lại</button>
-                <a asp-action="Index" class="btn btn-secondary" style="border:none">Quay lại</a>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

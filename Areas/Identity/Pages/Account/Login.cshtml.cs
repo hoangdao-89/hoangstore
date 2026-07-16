@@ -83,7 +83,7 @@ namespace hoangstore.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Display(Name = "Remember me?")]
+            [Display(Name = "Nhớ mật khẩu?")]
             public bool RememberMe { get; set; }
         }
 
@@ -122,7 +122,7 @@ namespace hoangstore.Areas.Identity.Pages.Account
                     {
                         return RedirectToAction("Index", "Category", new { area = "Admin" });
                     }
-                    _logger.LogInformation("User logged in.");
+                    _logger.LogInformation("Người dùng đã đăng nhập.");
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -131,12 +131,12 @@ namespace hoangstore.Areas.Identity.Pages.Account
                 }
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("User account locked out.");
+                    _logger.LogWarning("Tài khoản người dùng bị khóa.");
                     return RedirectToPage("./Lockout");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không chính xác.");
                     return Page();
                 }
             }

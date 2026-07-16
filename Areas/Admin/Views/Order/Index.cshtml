@@ -4,106 +4,245 @@
 
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
+    var orders = Model?.ToList() ?? new List<hoangstore.Models.Order>();
+    var searchTerm = ViewBag.SearchTerm as string ?? string.Empty;
     var currentFilter = ViewBag.CurrentFilter as OrderStatus?;
+    var paymentMethod = ViewBag.PaymentMethod as string ?? string.Empty;
+    var fromDate = ViewBag.FromDate as string ?? string.Empty;
+    var toDate = ViewBag.ToDate as string ?? string.Empty;
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalItems = (int)(ViewBag.TotalItems ?? 0);
 }
 
-<div class="contain p-3">
-    <div class="row pt-3 align-items-center">
-        <div class="col-4">
-            <h2 style="color:purple" class="m-0">
-                Danh sách Đơn hàng
-            </h2>
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Quản lý đơn hàng</h2>
+        <p class="text-muted mb-0">Tìm kiếm, lọc và xử lý nhiều đơn hàng cùng lúc.</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show rounded-0">
+            <i class="bi bi-check-circle me-1"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-        <div class="col-8 text-end">
-            <div class="btn-group" role="group">
-                <a href="@Url.Action("Index", "Order", new { area = "Admin" })"
-                   class="btn btn-sm @(currentFilter == null ? "btn-primary" : "btn-outline-primary")"
-                   style="@(currentFilter == null ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
-                    Tất cả
-                </a>
-                <a href="@Url.Action("Index", "Order", new { area = "Admin", orderStatus = OrderStatus.Pending })"
-                   class="btn btn-sm @(currentFilter == OrderStatus.Pending ? "btn-primary" : "btn-outline-primary")"
-                   style="@(currentFilter == OrderStatus.Pending ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
-                    Chờ xử lý
-                </a>
-                <a href="@Url.Action("Index", "Order", new { area = "Admin", orderStatus = OrderStatus.Shipping })"
-                   class="btn btn-sm @(currentFilter == OrderStatus.Shipping ? "btn-primary" : "btn-outline-primary")"
-                   style="@(currentFilter == OrderStatus.Shipping ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
-                    Đang giao
-                </a>
-                <a href="@Url.Action("Index", "Order", new { area = "Admin", orderStatus = OrderStatus.Delivered })"
-                   class="btn btn-sm @(currentFilter == OrderStatus.Delivered ? "btn-primary" : "btn-outline-primary")"
-                   style="@(currentFilter == OrderStatus.Delivered ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
-                    Đã giao
-                </a>
-                <a href="@Url.Action("Index", "Order", new { area = "Admin", orderStatus = OrderStatus.Cancelled })"
-                   class="btn btn-sm @(currentFilter == OrderStatus.Cancelled ? "btn-primary" : "btn-outline-primary")"
-                   style="@(currentFilter == OrderStatus.Cancelled ? "background-color: purple; border:none;" : "color: purple; border-color: purple;")">
-                    Đã hủy
-                </a>
-            </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div id="errorAlert" class="alert alert-warning alert-dismissible fade show rounded-0">
+            <i class="bi bi-exclamation-circle me-1"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-0 rounded-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <form method="get" action="@Url.Action("Index", "Order", new { area = "Admin" })">
+                <div class="row g-3">
+                    <div class="col-lg-3">
+                        <label class="form-label fw-semibold">Tìm kiếm</label>
+                        <input type="search" name="searchTerm" value="@searchTerm" class="form-control rounded-0" placeholder="Mã đơn, tên hoặc số điện thoại..." />
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label fw-semibold">Trạng thái</label>
+                        <select name="orderStatus" class="form-select rounded-0">
+                            <option value="">Tất cả trạng thái</option>
+                            @foreach (var status in Enum.GetValues<OrderStatus>())
+                            {
+                                if (currentFilter == status)
+                                {
+                                    <option value="@status" selected>@status.ToDisplayName()</option>
+                                }
+                                else
+                                {
+                                    <option value="@status">@status.ToDisplayName()</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label fw-semibold">Thanh toán</label>
+                        <select name="paymentMethod" class="form-select rounded-0">
+                            <option value="">Tất cả</option>
+                            <option value="COD" selected="@(paymentMethod == "COD")">COD</option>
+                            <option value="VNPAY" selected="@(paymentMethod == "VNPAY")">VNPAY</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label fw-semibold">Từ ngày</label>
+                        <input type="date" name="fromDate" value="@fromDate" class="form-control rounded-0" />
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label fw-semibold">Đến ngày</label>
+                        <input type="date" name="toDate" value="@toDate" class="form-control rounded-0" />
+                    </div>
+
+                    <div class="col-lg-1 d-flex align-items-end">
+                        <button class="btn btn-dark rounded-0 w-100" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="btn btn-outline-secondary rounded-0 btn-sm">Xóa lọc</a>
+                </div>
+            </form>
         </div>
     </div>
 
-    <table class="table table-bordered mt-3 text-center align-middle">
-        <thead>
-            <tr>
-                <th>Mã đơn</th>
-                <th>Khách hàng</th>
-                <th>Điện thoại</th>
-                <th>Ngày đặt</th>
-                <th>Tổng tiền</th>
-                <th>Thanh toán</th>
-                <th>Trạng thái</th>
-                <th>Hoạt động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (!Model.Any())
-            {
-                <tr>
-                    <td colspan="8" class="text-muted py-4">Không có đơn hàng nào trong danh mục này.</td>
-                </tr>
-            }
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td class="fw-bold text-dark">#HS-@item.Id</td>
-                    <td>@item.ReceiverName</td>
-                    <td>@item.ReceiverPhone</td>
-                    <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td class="fw-bold text-danger">@string.Format("{0:N0}", item.TotalPrice) đ</td>
-                    <td>
-                        <span class="badge @(item.PaymentMethod == "COD" ? "bg-secondary" : "bg-info text-dark")">
-                            @item.PaymentMethod
-                        </span>
-                    </td>
-                    <td>
-                        @if (item.Status == OrderStatus.Pending)
-                        {
-                            <span class="text-warning fw-bold"><i class="bi bi-clock-history me-1"></i>Chờ xử lý</span>
-                        }
-                        else if (item.Status == OrderStatus.Shipping)
-                        {
-                            <span class="text-primary fw-bold"><i class="bi bi-truck me-1"></i>Đang giao</span>
-                        }
-                        else if (item.Status == OrderStatus.Delivered)
-                        {
-                            <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Đã giao</span>
-                        }
-                        else if (item.Status == OrderStatus.Cancelled)
-                        {
-                            <span class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Đã hủy</span>
-                        }
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-center gap-2">
-                            <a asp-area="Admin" asp-controller="Order" asp-action="Details" asp-route-id="@item.Id"
-                               class="btn btn-sm btn-outline-primary">Chi tiết</a>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <form id="bulkForm" action="@Url.Action("BulkUpdateStatus", "Order", new { area = "Admin" })" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="searchTerm" value="@searchTerm" />
+        <input type="hidden" name="currentFilter" value="@currentFilter" />
+        <input type="hidden" name="paymentMethod" value="@paymentMethod" />
+        <input type="hidden" name="fromDate" value="@fromDate" />
+        <input type="hidden" name="toDate" value="@toDate" />
+        <input type="hidden" name="page" value="@currentPage" />
+
+        <div class="card border-0 rounded-0 shadow-sm">
+            <div class="card-header bg-white p-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h5 class="fw-bold mb-0">Danh sách đơn hàng</h5>
+                    <small class="text-muted">Tổng số: @totalItems đơn</small>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <span id="selectedOrderCount" class="text-muted small">Đã chọn 0 đơn</span>
+                    <select id="bulkStatus" name="orderStatus" class="form-select form-select-sm rounded-0" style="width:180px">
+                        <option value="">Chọn thao tác</option>
+                        <option value="@OrderStatus.Shipping">Chuyển sang đang giao</option>
+                        <option value="@OrderStatus.Delivered">Chuyển sang đã giao</option>
+                        <option value="@OrderStatus.Cancelled">Hủy đơn hàng</option>
+                    </select>
+                    <button type="button" id="btnBulkUpdate" class="btn btn-sm btn-primary rounded-0" disabled>Cập nhật</button>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                @if (!orders.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-receipt text-muted" style="font-size:3rem"></i>
+                        <h5 class="mt-3">Không tìm thấy đơn hàng</h5>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:50px"><input type="checkbox" id="checkAllOrders" class="form-check-input" /></th>
+                                    <th>Mã đơn</th>
+                                    <th>Người nhận</th>
+                                    <th>Ngày đặt</th>
+                                    <th class="text-end">Tổng tiền</th>
+                                    <th class="text-center">Thanh toán</th>
+                                    <th class="text-center">Trạng thái</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in orders)
+                                {
+                                    var isClosed = item.Status is OrderStatus.Delivered or OrderStatus.Cancelled;
+                                    <tr>
+                                        <td class="text-center"><input type="checkbox" name="orderIds" value="@item.Id" class="form-check-input order-checkbox" disabled="@isClosed" /></td>
+                                        <td class="fw-bold">#HS-@item.Id</td>
+                                        <td>
+                                            <div class="fw-semibold">@item.ReceiverName</div>
+                                            <div class="text-muted small">@item.ReceiverPhone</div>
+                                        </td>
+                                        <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td class="text-end fw-bold text-danger">@item.TotalPrice.ToString("N0") đ</td>
+                                        <td class="text-center"><span class="badge @(item.PaymentMethod == "COD" ? "bg-secondary" : "bg-info text-dark")">@item.PaymentMethod</span></td>
+                                        <td class="text-center"><span class="badge @item.Status.ToBadgeClass() rounded-pill px-3 py-2">@item.Status.ToDisplayName()</span></td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("Details", "Order", new { area = "Admin", id = item.Id })" class="btn btn-sm btn-outline-primary rounded-0">
+                                                <i class="bi bi-eye me-1"></i>Chi tiết
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </form>
+
+    @if (totalPages > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link rounded-0" href="@Url.Action("Index", "Order", new { area = "Admin", page = currentPage - 1, searchTerm, orderStatus = currentFilter, paymentMethod, fromDate, toDate })">Trước</a>
+                </li>
+
+                @for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++)
+                {
+                    <li class="page-item @(pageNumber == currentPage ? "active" : "")">
+                        <a class="page-link rounded-0" href="@Url.Action("Index", "Order", new { area = "Admin", page = pageNumber, searchTerm, orderStatus = currentFilter, paymentMethod, fromDate, toDate })">@pageNumber</a>
+                    </li>
+                }
+
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link rounded-0" href="@Url.Action("Index", "Order", new { area = "Admin", page = currentPage + 1, searchTerm, orderStatus = currentFilter, paymentMethod, fromDate, toDate })">Sau</a>
+                </li>
+            </ul>
+        </nav>
+    }
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(function () {
+            const checkboxes = $('.order-checkbox:not(:disabled)');
+
+            function updateSelection() {
+                const checkedCount = $('.order-checkbox:checked').length;
+                $('#selectedOrderCount').text(`Đã chọn ${checkedCount} đơn`);
+                $('#btnBulkUpdate').prop('disabled', checkedCount === 0 || !$('#bulkStatus').val());
+                $('#checkAllOrders').prop('checked', checkboxes.length > 0 && checkedCount === checkboxes.length);
+            }
+
+            $('#checkAllOrders').on('change', function () {
+                checkboxes.prop('checked', this.checked);
+                updateSelection();
+            });
+
+            $('.order-checkbox, #bulkStatus').on('change', updateSelection);
+
+            $('#btnBulkUpdate').on('click', function () {
+                const count = $('.order-checkbox:checked').length;
+                const statusText = $('#bulkStatus option:selected').text();
+
+                Swal.fire({
+                    title: `Cập nhật ${count} đơn hàng?`,
+                    text: `Các đơn hợp lệ sẽ được ${statusText.toLowerCase()}.`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xác nhận',
+                    cancelButtonText: 'Quay lại',
+                    confirmButtonColor: $('#bulkStatus').val() === '@OrderStatus.Cancelled' ? '#dc3545' : '#198754'
+                }).then(result => {
+                    if (result.isConfirmed) $('#bulkForm').submit();
+                });
+            });
+
+            setTimeout(() => {
+                ['successAlert', 'errorAlert'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) bootstrap.Alert.getOrCreateInstance(element).close();
+                });
+            }, 3000);
+        });
+    </script>
+}
