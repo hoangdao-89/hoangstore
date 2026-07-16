@@ -176,11 +176,37 @@ namespace hoangstore.Areas.Admin.Controllers
 
         private static bool CanChangeStatus(Order order, OrderStatus nextStatus)
         {
-            if (order.Status == nextStatus || order.Status is OrderStatus.Delivered or OrderStatus.Cancelled) return false;
-            var isVnPay = string.Equals(order.PaymentMethod, "VNPAY", StringComparison.OrdinalIgnoreCase);
-            if (order.Status == OrderStatus.Pending && isVnPay) return nextStatus == OrderStatus.Cancelled;
-            if (order.Status == OrderStatus.Pending) return nextStatus is OrderStatus.Shipping or OrderStatus.Cancelled;
-            if (order.Status == OrderStatus.Shipping) return nextStatus is OrderStatus.Delivered or OrderStatus.Cancelled;
+            if (order.Status == nextStatus ||
+                order.Status is OrderStatus.Delivered or OrderStatus.Cancelled)
+            {
+                return false;
+            }
+
+            var isVnPay = string.Equals(
+                order.PaymentMethod,
+                "VNPAY",
+                StringComparison.OrdinalIgnoreCase);
+
+            if (order.Status == OrderStatus.Pending && isVnPay)
+            {
+                return nextStatus == OrderStatus.Cancelled;
+            }
+
+            if (order.Status == OrderStatus.Pending)
+            {
+                return nextStatus is OrderStatus.Shipping or OrderStatus.Cancelled;
+            }
+
+            if (order.Status == OrderStatus.Processing)
+            {
+                return nextStatus is OrderStatus.Shipping or OrderStatus.Cancelled;
+            }
+
+            if (order.Status == OrderStatus.Shipping)
+            {
+                return nextStatus is OrderStatus.Delivered or OrderStatus.Cancelled;
+            }
+
             return false;
         }
 
