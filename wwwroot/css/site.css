@@ -270,3 +270,34 @@ a {
     padding-top: 0.75rem !important;
     padding-bottom: 0.75rem !important;
 }
+@media (max-width: 575.98px) {
+    .container,
+    .container-fluid,
+    .container-wide {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    .row {
+        --bs-gutter-x: 8px;
+        --bs-gutter-y: 12px;
+    }
+
+    .section-heading {
+        gap: 8px;
+    }
+
+        .section-heading h3 {
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .section-heading > span {
+            padding: 5px 7px;
+            font-size: 10px;
+        }
+}
