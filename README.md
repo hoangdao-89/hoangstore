@@ -5,7 +5,7 @@ The project supports product browsing, product variants, shopping cart, checkout
 
 ## Live Demo
 
-http://hoangstore.runasp.net
+https://hoangstore.runasp.net
 
 ## Main Features
 
